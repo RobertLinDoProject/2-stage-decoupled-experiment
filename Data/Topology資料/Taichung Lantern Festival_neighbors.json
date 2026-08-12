@@ -1,0 +1,268 @@
+[
+  {
+    "id": "1",
+    "max_occupancy": 3000,
+    "traversal_cost": 2,
+    "neighbors": [
+      {
+        "id": "3",
+        "cost": 2
+      },
+      {
+        "id": "4",
+        "cost": 1
+      },
+      {
+        "id": "9",
+        "cost": 1
+      },
+      {
+        "id": "E1",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "max_occupancy": 1500,
+    "traversal_cost": 1,
+    "neighbors": [
+      {
+        "id": "3",
+        "cost": 2
+      },
+      {
+        "id": "7",
+        "cost": 1
+      },
+      {
+        "id": "8",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "max_occupancy": 1200,
+    "traversal_cost": 0,
+    "neighbors": [
+      {
+        "id": "1",
+        "cost": 2
+      },
+      {
+        "id": "2",
+        "cost": 2
+      },
+      {
+        "id": "4",
+        "cost": 1
+      },
+      {
+        "id": "5",
+        "cost": 1
+      },
+      {
+        "id": "6",
+        "cost": 1
+      },
+      {
+        "id": "7",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "max_occupancy": 1000,
+    "traversal_cost": 0,
+    "neighbors": [
+      {
+        "id": "1",
+        "cost": 1
+      },
+      {
+        "id": "3",
+        "cost": 1
+      },
+      {
+        "id": "5",
+        "cost": 1
+      },
+      {
+        "id": "E1",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "max_occupancy": 1000,
+    "traversal_cost": 0,
+    "neighbors": [
+      {
+        "id": "3",
+        "cost": 1
+      },
+      {
+        "id": "4",
+        "cost": 1
+      },
+      {
+        "id": "6",
+        "cost": 1
+      },
+      {
+        "id": "E2",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "max_occupancy": 1200,
+    "traversal_cost": 0,
+    "neighbors": [
+      {
+        "id": "3",
+        "cost": 1
+      },
+      {
+        "id": "5",
+        "cost": 1
+      },
+      {
+        "id": "7",
+        "cost": 1
+      },
+      {
+        "id": "E3",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "max_occupancy": 1500,
+    "traversal_cost": 1,
+    "neighbors": [
+      {
+        "id": "2",
+        "cost": 1
+      },
+      {
+        "id": "3",
+        "cost": 1
+      },
+      {
+        "id": "6",
+        "cost": 1
+      },
+      {
+        "id": "E4",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "max_occupancy": 1000,
+    "traversal_cost": 1,
+    "neighbors": [
+      {
+        "id": "2",
+        "cost": 1
+      },
+      {
+        "id": "9",
+        "cost": 1
+      },
+      {
+        "id": "E5",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "max_occupancy": 1200,
+    "traversal_cost": 1,
+    "neighbors": [
+      {
+        "id": "1",
+        "cost": 1
+      },
+      {
+        "id": "8",
+        "cost": 1
+      },
+      {
+        "id": "E5",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "E1",
+    "max_occupancy": 6000,
+    "traversal_cost": 10,
+    "neighbors": [
+      {
+        "id": "1",
+        "cost": 1
+      },
+      {
+        "id": "4",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "E2",
+    "max_occupancy": 5000,
+    "traversal_cost": 10,
+    "neighbors": [
+      {
+        "id": "5",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "E3",
+    "max_occupancy": 4000,
+    "traversal_cost": 10,
+    "neighbors": [
+      {
+        "id": "6",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "E4",
+    "max_occupancy": 4000,
+    "traversal_cost": 10,
+    "neighbors": [
+      {
+        "id": "7",
+        "cost": 1
+      }
+    ]
+  },
+  {
+    "id": "E5",
+    "max_occupancy": 4000,
+    "traversal_cost": 10,
+    "neighbors": [
+      {
+        "id": "8",
+        "cost": 1
+      },
+      {
+        "id": "9",
+        "cost": 1
+      }
+    ]
+  }
+]

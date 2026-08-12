@@ -1,0 +1,141 @@
+{
+  "manifest_version": "topology_input_manifest_v1",
+  "materialization_id": "human_0803_directional_cost_v1",
+  "source_label": "X:/瀏覽器下載/拓樸0803/拓樸0803/人工",
+  "graph_directionality": "undirected",
+  "adjacency_semantics": "symmetric",
+  "edge_cost_directionality": "directed",
+  "topologies": [
+    {
+      "topology_id": "FCU",
+      "source_files": {
+        "fcu_map_neww.json": "sha256:7d319bc2db24760b1aa6fd3bb613695d20ceb9afcf3a90c7c8b2e306d0c1e152",
+        "fcu_neighbors.json": "sha256:fd321ae389f42420e595906e7a91925441861f5f1a581da6b55937943a455353",
+        "fcu_rule.json": "sha256:3292a9ae9a2655c597b6d8239b071963cf928d9c6aaa1d2b7e8863c307a23c1b"
+      },
+      "materialized_files": {
+        "fcu_map_neww.json": "sha256:18534dcdccb234439e569134036701c469d540a29478ba9c8393eed5b4c1512e",
+        "fcu_neighbors.json": "sha256:a9be78c679b259d8b1a80c39000de40fc84631cae7f7fc328d6f1bb144134121",
+        "fcu_rule.json": "sha256:9c20bdae89a019fce01d7a499cec2da36302c414c38637c1e5374eeea9ef8637"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "human_0803/fcu",
+        "node_count": 40,
+        "directed_edge_count": 174,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4"
+        ],
+        "asymmetric_cost_pairs": [
+          {
+            "source_id": "4",
+            "target_id": "6",
+            "forward_cost": 10,
+            "reverse_cost": 1
+          }
+        ],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4"
+        ]
+      }
+    },
+    {
+      "topology_id": "Taichung Lantern Festival",
+      "source_files": {
+        "Taichung Lantern Festival_map_neww.json": "sha256:68506bdc10f917a9acc02170fddd7f2228cf4730d201888ad4210f3c8a54ac1b",
+        "Taichung Lantern Festival_neighbors.json": "sha256:c810f63f0cfd95c9cf7286c5f30f4e3510ba0197f05e782e5b4a594c2b5c6f42",
+        "Taichung Lantern Festival_rule.json": "sha256:4748a9b234a19ad95daa1947e0da56894f1bd0bbf9087587351159fd21cc2a4c"
+      },
+      "materialized_files": {
+        "Taichung Lantern Festival_map_neww.json": "sha256:f3aa92334393b47efdb4d8f906a70d843683c010ac3f67692577fd6f82dc9322",
+        "Taichung Lantern Festival_neighbors.json": "sha256:d9753e36d1258c9791a7e3d346ca8ddbb408e1394e5eca9331015ea28cb8aed2",
+        "Taichung Lantern Festival_rule.json": "sha256:2b5aad4a5899905a41c59e101595a69a8431f9569908ec10ebcf0b5aae41cc5b"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "human_0803/Taichung Lantern Festival",
+        "node_count": 14,
+        "directed_edge_count": 42,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5"
+        ],
+        "asymmetric_cost_pairs": [],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5"
+        ]
+      }
+    },
+    {
+      "topology_id": "Taipei New Year's Eve",
+      "source_files": {
+        "Taipei New Year's Eve_map_neww.json": "sha256:40c60623e90cacc5a5855ea55289b90a12cb671ee31a48028dfe2dc4f28adce5",
+        "Taipei New Year's Eve_neighbors.json": "sha256:2cf331624519329d15b897e31394ad47ab8020bc7c279190dc6900be6da2daa4",
+        "Taipei New Year's Eve_rule.json": "sha256:d073ac9f0cc08fa912b0aee858d94c77fb24d1670ae873792c74ad29709eeb83"
+      },
+      "materialized_files": {
+        "Taipei New Year's Eve_map_neww.json": "sha256:73f9616f1c03db7c95b68465bbac968486fef3ce9b996571c5a2ac47de45779b",
+        "Taipei New Year's Eve_neighbors.json": "sha256:17e813463458331a4342a285971c03563834b9404ad285542ca5453f163313c7",
+        "Taipei New Year's Eve_rule.json": "sha256:ca5c04d76f14d391fcd58fcbaf523f6c9966a05dd64e31fc5281fcac73e0cf67"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "human_0803/Taipei New Year's Eve",
+        "node_count": 11,
+        "directed_edge_count": 26,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6"
+        ],
+        "asymmetric_cost_pairs": [
+          {
+            "source_id": "2",
+            "target_id": "4",
+            "forward_cost": 2,
+            "reverse_cost": 1
+          }
+        ],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6"
+        ]
+      }
+    }
+  ]
+}

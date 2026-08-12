@@ -1,0 +1,6 @@
+﻿perception_model_id,perception_model_name,perception_model_family,perception_model_version,checkpoint_or_weight_id,compatible_dataset_id,input_resolution,count_output_definition,model_selection_split,inference_config_id,paper_result_eligible
+yolov8_det_v1,YOLOv8,object_detection,v1,C:\Users\nicol\runs\detect\train6\weights\best.pt,detection_v1,640x640,number_of_detected_persons_class_0_conf_ge_0.25,val,yolov8_infer_v1,true
+yolov11_det_v1,YOLOv11,object_detection,v1,C:\Users\nicol\runs\detect\train-2\weights\best.pt,detection_v1,640x640,number_of_detected_persons_class_0_conf_ge_0.25,val,yolov11_infer_v1,true
+rtdetr_det_v1,RT-DETR,object_detection,v1,C:\Users\nicol\runs\RTDETR4\weights\best.pt,detection_v1,640x640,number_of_detected_persons_class_0_conf_ge_0.25,val,rtdetr_infer_v1,true
+csrnet_den_v1,CSRNet,crowd_density,v1,C:\Users\nicol\CSRNet-pytorch-master\partB權重檔\0model_best.pth.tar,density_v1,400x400,density_map_integral,test_used_as_validation,csrnet_infer_v1,true
+mcnn_den_v1,MCNN,crowd_density,v1,C:\Users\nicol\CSRNet-pytorch-master\mcnnmodel_best.pth.tar,density_v1,400x400,density_map_integral,test_used_as_validation,mcnn_infer_v1,true

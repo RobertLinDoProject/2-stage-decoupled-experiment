@@ -1,0 +1,54 @@
+services:
+  api:
+    build:
+      context: ./backend
+    environment:
+      LOCAL_ARTIFACT_ROOT: /app/storage
+      CURRENT_PROJECT_DATA_ROOT: /data/current-project
+      CURRENT_PROJECT_CONFIG_ROOT: /app/configs
+      LIVE_GAI_PROVIDER_ENABLED: ${LIVE_GAI_PROVIDER_ENABLED:-true}
+      GAI_EXECUTION_MODE: ${GAI_EXECUTION_MODE:-live}
+      GAI_PROVIDER_ENDPOINT: ${GAI_PROVIDER_ENDPOINT:-}
+      GAI_PROVIDER_API_KEY: ${GAI_PROVIDER_API_KEY:-}
+      GAI_PROVIDER_NAME: ${GAI_PROVIDER_NAME:-ollama}
+      GAI_PROVIDER_MODEL: ${GAI_PROVIDER_MODEL:-mistral:7b-instruct-v0.3-q4_K_M}
+      GAI_PROVIDER_MODEL_VERSION: ${GAI_PROVIDER_MODEL_VERSION:-}
+      GAI_PROMPT_TEMPLATE_VERSION: ${GAI_PROMPT_TEMPLATE_VERSION:-m6_ollama_action_v1}
+      GAI_TEMPERATURE: ${GAI_TEMPERATURE:-}
+      GAI_REASONING_EFFORT: ${GAI_REASONING_EFFORT:-}
+      GAI_TIMEOUT_MS: ${GAI_TIMEOUT_MS:-120000}
+      GAI_MAX_RETRIES: ${GAI_MAX_RETRIES:-1}
+      GAI_BUDGET_MODE: ${GAI_BUDGET_MODE:-auto}
+      GAI_BUDGET_MAX_REQUESTS_PER_RUN: ${GAI_BUDGET_MAX_REQUESTS_PER_RUN:-4}
+      GAI_BUDGET_HARD_LIMIT: ${GAI_BUDGET_HARD_LIMIT:-50000}
+      GAI_MAX_OUTPUT_TOKENS: ${GAI_MAX_OUTPUT_TOKENS:-}
+      GAI_NUM_CTX: ${GAI_NUM_CTX:-2048}
+      GAI_KEEP_ALIVE: ${GAI_KEEP_ALIVE:-5m}
+      GAI_SEED: ${GAI_SEED:-114}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_ENDPOINT: ${OPENAI_API_ENDPOINT:-https://api.openai.com/v1/responses}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-nano-2025-08-07}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:5273,http://127.0.0.1:5273}
+    volumes:
+      - ./storage:/app/storage
+      - ./contracts:/app/contracts:ro
+      - ./configs:/app/configs:ro
+      - ./Data:/data/current-project:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - "${FRONTEND_HOST_PORT:-5273}:5173"
+    depends_on:
+      api:
+        condition: service_healthy

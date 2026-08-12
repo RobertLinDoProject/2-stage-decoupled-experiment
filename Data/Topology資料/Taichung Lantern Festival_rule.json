@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "topology_id": "Taichung Lantern Festival",
+  "graph_directionality": "undirected",
+  "cost_semantics": "total_cost = edge_cost + traversal_cost",
+  "max_total_cost": 3,
+  "allowed_node_types_as_source": [
+    "zone"
+  ],
+  "allowed_node_types_as_destination": [
+    "zone",
+    "exit"
+  ],
+  "external_exits": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5"
+  ],
+  "exit_behavior": "terminate_search",
+  "exit_search_behavior": "stop",
+  "priority_rule": "ascending_total_cost",
+  "decision_output_mode": "target_only",
+  "adjacency_semantics": "symmetric",
+  "edge_cost_directionality": "directed",
+  "topology_input_materialization": "human_0803_directional_cost_v1"
+}

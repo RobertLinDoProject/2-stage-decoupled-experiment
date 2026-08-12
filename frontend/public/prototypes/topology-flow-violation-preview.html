@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Topology Flow & Violation Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #61707d;
+      --line: #d9e0e6;
+      --surface: #ffffff;
+      --soft: #f4f7f9;
+      --accent: #245b74;
+      --accent-soft: #e7f0f4;
+      --danger: #c43d3d;
+      --danger-soft: #fff0f0;
+      --warning: #9c6a00;
+      --warning-soft: #fff7dc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef2f5; color: var(--ink); }
+    button, select, input { font: inherit; }
+    button, select { border: 1px solid #b9c6cf; border-radius: 6px; background: white; color: var(--ink); }
+    button { cursor: pointer; padding: 8px 12px; }
+    button:hover { border-color: var(--accent); }
+    select { min-height: 36px; padding: 6px 28px 6px 9px; }
+    .shell { max-width: 1500px; margin: 0 auto; padding: 24px; }
+    .hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(24px, 3vw, 36px); line-height: 1.1; letter-spacing: 0; }
+    h2 { font-size: 18px; letter-spacing: 0; }
+    h3 { font-size: 14px; letter-spacing: 0; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 7px; }
+    .subtitle { color: var(--muted); margin-top: 8px; font-size: 14px; }
+    .prototype-badge, .status-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .prototype-badge { background: var(--warning-soft); color: var(--warning); }
+    .status { padding: 11px 13px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 13px; }
+    .status.ok { border-color: #a9c8b6; background: #f0faf4; color: #23643c; }
+    .status.warn { border-color: #e5cc8e; background: var(--warning-soft); color: #725000; }
+    .status.error { border-color: #e1a3a3; background: var(--danger-soft); color: #8e2323; }
+    .status.loading { border-color: #abd0df; background: var(--accent-soft); color: #214f66; }
+    .controls { display: grid; gap: 16px; padding: 18px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .control-group { display: grid; gap: 11px; min-width: 0; margin: 0; padding: 0; border: 0; }
+    .control-group + .control-group { padding-top: 16px; border-top: 1px solid var(--line); }
+    .control-group legend { padding: 0; color: var(--ink); font-size: 13px; font-weight: 800; }
+    .control-grid { display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 12px; }
+    .control-grid.trial-grid { grid-template-columns: repeat(4, minmax(140px, 1fr)); }
+    .control { display: grid; gap: 5px; min-width: 0; overflow: hidden; }
+    .control label { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .control select, .control output { width: 100%; min-width: 0; max-width: 100%; }
+    .control.actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+    .control.actions button { min-width: 130px; }
+    .file-input { display: none; }
+    .formal-only { display: none; }
+    #controls.formal-mode .formal-only, #experimentSelection.formal-mode .formal-only { display: grid; }
+    .derived-value { display: flex; align-items: center; min-height: 36px; padding: 6px 9px; border: 1px solid #d5dee4; border-radius: 6px; background: var(--soft); color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+    .selection-summary { display: grid; gap: 11px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .selection-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .selection-chip { min-width: 0; padding: 9px 10px; border: 1px solid #e4e9ed; border-radius: 6px; background: var(--soft); }
+    .selection-chip span { display: block; color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .selection-chip strong { display: block; margin-top: 4px; overflow-wrap: anywhere; font-size: 12px; }
+    .banner { padding: 8px 10px; border: 1px solid #abd0df; border-radius: 6px; background: var(--accent-soft); color: #214f66; font-size: 12px; font-weight: 700; }
+    .banner.mismatch { border-color: #e1a3a3; background: var(--danger-soft); color: #8e2323; }
+    .summary { margin-top: 0; }
+    .graph-section { display: grid; gap: 12px; margin-top: 16px; }
+    .branch-switcher { display: inline-flex; align-self: start; width: fit-content; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .branch-switcher button { min-width: 170px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .branch-switcher button[aria-pressed="true"] { background: var(--accent); color: white; }
+    .panel { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+    .panel-head p { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .panel-head .status-badge { background: var(--soft); color: var(--muted); }
+    .panel-head .status-badge.valid { background: #e9f6ed; color: #23643c; }
+    .panel-head .status-badge.invalid { background: var(--danger-soft); color: #8e2323; }
+    .graph-wrap { position: relative; padding: 12px; background: #fbfcfd; }
+    svg { display: block; width: 100%; height: auto; min-height: 360px; max-height: 760px; aspect-ratio: 1.55; background: linear-gradient(#ffffff, #f8fafb); border: 1px solid #e7edf1; border-radius: 6px; }
+    .base-edge { fill: none; stroke: #9eabb4; stroke-width: 0.6; opacity: .48; stroke-linecap: round; }
+    .flow-edge { stroke: var(--accent); stroke-width: 0.82; opacity: .95; }
+    .flow-edge.violation-flow { stroke: var(--danger); stroke-width: 1.05; stroke-dasharray: 3 2; }
+    .flow-edge.flow-violation { stroke-dasharray: 1 2; }
+    .flow-edge.violation-overlay { stroke: var(--danger); stroke-width: 1.05; stroke-dasharray: 3 2; opacity: .95; pointer-events: none; }
+    .edge-overlay { pointer-events: none; opacity: .78; }
+    .flow-hit { stroke: transparent; stroke-width: 8; pointer-events: stroke; cursor: pointer; }
+    .graph-empty { fill: var(--muted); font-size: 4px; font-weight: 800; text-anchor: middle; }
+    .graph-empty-note { fill: var(--muted); font-size: 2.4px; text-anchor: middle; }
+    .node-circle { fill: white; stroke: #245b74; stroke-width: 1.1; }
+    .node-circle.exit { fill: #edf1f3; stroke: #798993; }
+    .node-circle.special { fill: #fff7e6; stroke: #c97816; }
+    .node-circle.violation { stroke: var(--danger); stroke-width: 2.6; }
+    .node-label { fill: var(--ink); font-size: 2.55px; font-weight: 800; pointer-events: none; dominant-baseline: middle; paint-order: stroke; stroke: white; stroke-width: .8px; }
+    svg[data-topology-id="fcu"] .node-circle { fill-opacity: .78; }
+    svg[data-topology-id="fcu"] .node-label { font-size: 2.1px; stroke-width: .62px; }
+    svg[data-topology-id="fcu"] .node-circle.violation { stroke-width: 2.1; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 9px 14px 12px; color: var(--muted); font-size: 11px; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .swatch { display: inline-block; width: 18px; height: 3px; background: #c7d1d8; }
+    .swatch.flow { background: var(--accent); }
+    .swatch.violation { height: 0; border-top: 3px dashed var(--danger); background: transparent; }
+    .panel-foot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 11px 14px 14px; border-top: 1px solid var(--line); }
+    .metric { min-width: 0; padding: 9px; border: 1px solid #e4e9ed; border-radius: 6px; background: var(--soft); }
+    .metric strong { display: block; font-size: 16px; }
+    .metric small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .summary, .insight, .detail { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .section-lead { max-width: 760px; color: var(--muted); margin-top: 6px; font-size: 13px; line-height: 1.55; }
+    .paired-explainer { margin-top: 14px; padding: 14px 16px; border: 1px solid #cddde5; border-radius: 7px; background: #f7fbfc; }
+    .paired-explainer summary { cursor: pointer; color: var(--ink); font-size: 13px; font-weight: 800; }
+    .paired-explainer p { max-width: 900px; margin-top: 9px; color: #35515e; font-size: 13px; line-height: 1.65; }
+    .paired-logic { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 11px; }
+    .paired-logic > div { min-width: 0; padding: 10px; border: 1px solid #dce8ed; border-radius: 6px; background: white; }
+    .paired-logic strong, .paired-logic span { display: block; }
+    .paired-logic strong { font-size: 13px; }
+    .paired-logic span { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .paired-conclusion { margin-top: 13px; padding: 12px 14px; border-left: 4px solid var(--accent); border-radius: 5px; background: var(--accent-soft); color: #294c5c; font-size: 13px; line-height: 1.6; }
+    .paired-conclusion.warning { border-left-color: var(--warning); background: var(--warning-soft); color: #725000; }
+    .paired-conclusion.error { border-left-color: var(--danger); background: var(--danger-soft); color: #8e2323; }
+    .paired-conclusion strong { display: block; margin-bottom: 3px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 11px; }
+    .summary-card { min-height: 70px; padding: 11px; border: 1px solid #e4e9ed; border-radius: 6px; background: var(--soft); }
+    .summary-card .label { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .summary-card .value { margin-top: 5px; font-size: 15px; font-weight: 800; }
+    .summary-card.danger { background: var(--danger-soft); border-color: #ecc0c0; }
+    .aggregate-summary { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .aggregate-summary-heading { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; color: var(--ink); font-size: 13px; }
+    .aggregate-summary-heading span { color: var(--muted); font-size: 11px; }
+    .aggregate-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
+    .aggregate-summary-grid > div { min-width: 0; padding: 10px; border: 1px solid #e4e9ed; border-radius: 6px; background: var(--soft); }
+    .aggregate-summary-grid strong, .aggregate-summary-grid small, .aggregate-summary-grid span { display: block; overflow-wrap: anywhere; }
+    .aggregate-summary-grid strong { font-size: 16px; }
+    .aggregate-summary-grid small { margin-top: 2px; color: var(--ink); font-weight: 800; }
+    .aggregate-summary-grid span { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .insight { border-left: 4px solid var(--accent); }
+    .insight p { color: #35515e; margin-top: 8px; line-height: 1.6; font-size: 14px; }
+    .evidence-box { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .evidence-box summary, .rule-box summary { cursor: pointer; color: var(--ink); font-size: 14px; font-weight: 800; }
+    .evidence-table-wrap { margin-top: 12px; overflow-x: auto; border: 1px solid #e4e9ed; border-radius: 6px; }
+    .evidence-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 12px; }
+    .evidence-table th, .evidence-table td { padding: 9px 10px; border-bottom: 1px solid #e4e9ed; text-align: left; vertical-align: top; }
+    .evidence-table th { background: var(--soft); color: var(--muted); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+    .evidence-table tbody tr { cursor: pointer; }
+    .evidence-table tbody tr:hover, .evidence-table tbody tr:focus { background: var(--accent-soft); outline: none; }
+    .evidence-table tbody tr:last-child td { border-bottom: 0; }
+    .evidence-code { display: inline-block; color: #8e2323; font-size: 11px; font-weight: 800; }
+    .evidence-original { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .evidence-empty { color: var(--muted); padding: 12px; font-size: 12px; }
+    .rule-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .rule-list { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .rule-list strong { color: var(--ink); }
+    .detail { min-height: 110px; }
+    .detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .detail-head button { padding: 5px 9px; font-size: 12px; }
+    .detail.empty { color: var(--muted); }
+    .detail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 11px; }
+    .detail-item { padding: 9px; border: 1px solid #e4e9ed; border-radius: 6px; background: var(--soft); }
+    .detail-item span { display: block; color: var(--muted); font-size: 11px; }
+    .detail-item strong { display: block; overflow-wrap: anywhere; margin-top: 3px; font-size: 13px; }
+    .error-list { margin: 9px 0 0; padding-left: 18px; color: var(--danger); font-size: 12px; line-height: 1.55; }
+    .footer-note { color: var(--muted); margin-top: 16px; font-size: 11px; }
+    #tooltip { position: fixed; z-index: 4; display: none; max-width: 260px; padding: 9px 10px; border: 1px solid #9baeb8; border-radius: 6px; background: #17212b; color: white; pointer-events: none; font-size: 11px; line-height: 1.45; box-shadow: 0 6px 18px rgba(20, 35, 45, .18); }
+    @media (max-width: 1100px) { .selection-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); } .summary-grid, .aggregate-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) { .shell { padding: 14px; } .hero { display: block; } .prototype-badge { margin-top: 12px; } .control-grid, .control-grid.trial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .selection-chips, .summary-grid, .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .paired-logic { grid-template-columns: 1fr; } .summary > .section-heading { display: block; } .summary > .section-heading .banner { margin-top: 10px; } .branch-switcher { width: 100%; } .branch-switcher button { flex: 1; min-width: 0; } svg { min-height: 320px; } }
+    @media (max-width: 480px) { .control-grid, .control-grid.trial-grid, .selection-chips, .summary-grid, .aggregate-summary-grid, .detail-grid { grid-template-columns: 1fr; } .control.actions { align-items: stretch; flex-direction: column; } .control.actions button { width: 100%; } svg { min-height: 280px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Research visualization prototype</div>
+        <h1>Topology 人流分配與違規比較預覽</h1>
+        <p class="subtitle">用同一個疏散情境，比較正確人口輸入與 Perception 觀測人口輸入下的決策結果。</p>
+      </div>
+      <span class="prototype-badge">Prototype only — not part of official UI</span>
+    </header>
+
+    <div id="status" class="status" role="status">Loading preview data…</div>
+
+    <section id="controls" class="controls" aria-label="Preview controls">
+      <fieldset class="control-group">
+        <legend>Data source</legend>
+        <div class="control-grid">
+          <div class="control"><label for="dataSource">Source</label><select id="dataSource"><option value="demo">Mock data</option><option value="formal">Formal Run</option><option value="local">Local JSON</option></select></div>
+        </div>
+      </fieldset>
+      <div class="control actions"><button id="loadJson" type="button">Load JSON</button><button id="resetDemo" type="button">Reset Demo</button><input id="jsonFile" class="file-input" type="file" accept="application/json,.json" /></div>
+    </section>
+
+    <section id="experimentSelection" class="selection-summary" aria-label="Experiment selection">
+      <div class="section-heading"><h2>Experiment selection</h2><span class="subtitle">選擇後會自動載入對應的 paired preview</span></div>
+      <div id="selectionControls" class="selection-chips">
+        <div class="control formal-only"><label for="runSelect">Run</label><select id="runSelect" disabled></select></div>
+        <div class="control formal-only"><label for="ruleSourceSelect">Rule source</label><select id="ruleSourceSelect" disabled></select></div>
+        <div class="control"><label for="topologySelect">Topology</label><select id="topologySelect"></select></div>
+        <div class="control formal-only"><label for="modelSelect">Model</label><select id="modelSelect" disabled></select></div>
+        <div class="control"><label for="regimeSelect">Regime</label><select id="regimeSelect"></select></div>
+        <div class="control"><label for="trialSelect">Trial</label><select id="trialSelect"></select></div>
+        <div class="control"><label for="scenarioDisplay">Scenario</label><output id="scenarioDisplay" class="derived-value">—</output></div>
+        <div class="control"><label for="interfaceSelect">Interface</label><select id="interfaceSelect"><option value="rule_based">rule_based</option><option value="gai">gai</option><option value="gai_reserved">gai_reserved (unavailable)</option></select></div>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="同一情境的兩種決策比較">
+      <div class="section-heading">
+        <div>
+          <h2>同一情境的兩種決策比較</h2>
+          <p class="section-lead">固定同一個 scenario、拓樸、容量與 trial，只改變 M6 看到的人數，觀察 Perception 估計誤差進入決策流程後是否出現新的規則違反。</p>
+        </div>
+        <div id="pairBanner" class="banner">正在檢查配對條件…</div>
+      </div>
+      <details class="paired-explainer" open>
+        <summary>為什麼要這樣比較？</summary>
+        <p>如果兩邊使用不同場景，結果差異可能來自人口分布、拓樸難度或容量不同，而不一定是 Perception 造成的。因此本頁固定相同的 topology、capacity、scenario ground truth、Perception model、density regime、trial、M6 interface 與 M7 驗證標準，讓兩個分支可以直接比較。</p>
+        <div class="paired-logic">
+          <div><strong>不使用二階段框架</strong><span>M6 直接使用正確人口數（scenario_gt），作為理想參考。</span></div>
+          <div><strong>使用二階段框架</strong><span>M6 只能使用 Perception 產生的觀測人口（observed_population），M7 仍使用同一份 scenario_gt 驗證。</span></div>
+        </div>
+      </details>
+      <div id="summaryGrid" class="summary-grid"></div>
+      <div id="pairedConclusion" class="paired-conclusion" aria-live="polite"></div>
+      <div id="aggregateSummary" class="aggregate-summary" aria-live="polite"></div>
+    </section>
+
+    <section class="graph-section" aria-label="Active topology graph">
+      <div class="section-heading"><div><h2 id="activeBranchTitle">使用二階段框架</h2><p id="activeBranchDescription" class="subtitle">決策輸入：Perception 觀測人口 · M7：使用 M4 正確人口獨立驗證</p></div><span id="activeStatus" class="status-badge">—</span></div>
+      <div class="branch-switcher" role="group" aria-label="Decision branch">
+        <button id="withoutBranchButton" type="button" aria-pressed="false">不使用二階段</button>
+        <button id="withBranchButton" type="button" aria-pressed="true">使用二階段</button>
+      </div>
+      <article class="panel">
+        <div class="graph-wrap"><svg id="activeGraph" viewBox="0 0 100 100" role="img" aria-label="Active topology graph"></svg></div>
+        <div class="legend"><span><i class="swatch"></i>拓樸邊</span><span><i class="swatch flow"></i>M6 人流箭頭 · 移到箭頭查看人數</span><span><i class="swatch violation"></i>M7 違規標記</span></div>
+        <div id="activeMetrics" class="panel-foot"></div>
+      </article>
+    </section>
+
+    <section id="detail" class="detail empty"><div class="detail-head"><h2>選取的詳細資料</h2><button id="clearDetail" type="button">清除選取</button></div><div id="detailContent"><p style="margin-top:8px">將滑鼠移到節點或人流箭頭可快速查看；點擊後會固定在這裡。</p></div></section>
+    <section class="insight"><h2>白話結論</h2><p id="insightText">—</p></section>
+    <details class="evidence-box">
+      <summary>違規證據（M7）</summary>
+      <div class="evidence-table-wrap">
+        <table class="evidence-table">
+          <thead><tr><th>Branch</th><th>Category</th><th>Location</th><th>Rule</th><th>M7 evidence</th></tr></thead>
+          <tbody id="violationEvidenceBody"><tr><td colspan="5" class="evidence-empty">展開後顯示目前 M7 已記錄的違規 evidence。</td></tr></tbody>
+        </table>
+      </div>
+      <details class="rule-box">
+        <summary>這個違規規則代表什麼？</summary>
+        <ul class="rule-list">
+          <li><strong>CAPACITY_CONSTRAINT：</strong>M7 的 post-population 超過該節點 capacity。</li>
+          <li><strong>TOPOLOGY_CONNECTIVITY：</strong>source → target 不符合 topology allowed edge 或 destination rule。</li>
+          <li><strong>SOURCE_UNDERFLOW：</strong>移出的人數超過 M7 所使用真值中的可用 source population。</li>
+          <li><strong>FLOW_CONSERVATION：</strong>incoming / outgoing 流量不符合守恆規則。</li>
+          <li><strong>UNKNOWN_ZONE：</strong>action 使用 topology 不存在的節點。</li>
+          <li><strong>PARSE_ERROR：</strong>action 缺少必要欄位或無法解析。</li>
+          <li><strong>UNKNOWN_RULE_CODE：</strong>M7 回傳尚未建立 UI 對應名稱的正式 reason，保留原始 code。</li>
+        </ul>
+      </details>
+    </details>
+    <p class="footer-note">正式預覽只讀取 M3–M7 artifact；本頁不修改 topology、actions、validation evidence 或正式報告。</p>
+  </main>
+  <div id="tooltip"></div>
+
+  <script>
+    const DEMO_DATA = {
+      schema_version: "topology_flow_violation_preview_v1",
+      metadata: {
+        run_id: "DEMO-RUN",
+        topology_id: "demo-campus",
+        topology_name: "Demo Campus",
+        topology_checksum: "demo-topology-checksum",
+        capacity_checksum: "demo-capacity-checksum",
+        scenario_id: "demo_high_000",
+        scenario_gt_checksum: "demo-scenario-checksum",
+        regime: "HIGH",
+        interface_type: "rule_based",
+        trial_id: "DEMO-TRIAL-000",
+        pair_id: "DEMO-PAIR-000",
+        trial_index: 0,
+        experiment_condition: "demo_condition",
+        m7_truth_source_stage_id: "M4",
+        demo: true
+      },
+      topology: {
+        id: "demo-campus",
+        name: "Demo Campus",
+        layout_fallback: "embedded",
+        topology_checksum: "demo-topology-checksum",
+        capacity_checksum: "demo-capacity-checksum",
+        nodes: [
+          { id: "A", label: "Zone A", capacity: 120, node_type: "zone", is_source_eligible: true, x: .12, y: .5 },
+          { id: "B", label: "Zone B", capacity: 100, node_type: "zone", is_source_eligible: true, x: .34, y: .22 },
+          { id: "C", label: "Zone C", capacity: 100, node_type: "zone", is_source_eligible: true, x: .56, y: .5 },
+          { id: "D", label: "Zone D", capacity: 100, node_type: "zone", is_source_eligible: true, x: .34, y: .78 },
+          { id: "E", label: "Exit E", capacity: 500, node_type: "exit", is_source_eligible: false, x: .84, y: .5 }
+        ],
+        edges: [
+          { source: "A", target: "B", directed: false }, { source: "B", target: "C", directed: false },
+          { source: "B", target: "D", directed: false }, { source: "C", target: "D", directed: false },
+          { source: "D", target: "E", directed: false }
+        ]
+      },
+      scenario_gt: { A: 90, B: 70, C: 70, D: 55, E: 42 },
+      branches: {
+        without_two_stage: {
+          availability: "available", decision_input_type: "scenario_gt", observed_population: { A: 90, B: 70, C: 70, D: 55, E: 42 }, decision_input_checksum: "demo-scenario-checksum",
+          actions: [
+            { action_id: "without-action-01", source_id: "B", target_id: "C", move_count: 20, parse_valid: true },
+            { action_id: "without-action-02", source_id: "D", target_id: "E", move_count: 15, parse_valid: true }
+          ],
+          validation: { valid: true, invalid_output: false, post_population: { A: 90, B: 50, C: 90, D: 40, E: 57 }, violations: [], evidence_source: "M7 demo evidence", truth_source_stage_id: "M4", truth_checksum: "demo-scenario-checksum" }
+        },
+        with_two_stage: {
+          availability: "available", decision_input_type: "observation", observed_population: { A: 72, B: 61, C: 58, D: 49, E: 37 }, decision_input_checksum: "demo-observation-checksum",
+          actions: [
+            { action_id: "with-action-01", source_id: "B", target_id: "C", move_count: 40, parse_valid: true },
+            { action_id: "with-action-02", source_id: "A", target_id: "E", move_count: 15, parse_valid: true }
+          ],
+          validation: { valid: false, invalid_output: false, post_population: { A: 75, B: 30, C: 110, D: 55, E: 42 }, violations: [
+            { violation_id: "demo-vio-01", rule_code: "CAPACITY_CONSTRAINT", zone_id: "C", action_ids: ["with-action-01"], capacity: 100, post_population: 110, violation_margin: 10, message: "Zone C exceeds capacity by 10" },
+            { violation_id: "demo-vio-02", rule_code: "TOPOLOGY_CONNECTIVITY", source_id: "A", target_id: "E", action_ids: ["with-action-02"], message: "A to E is not an allowed topology edge" }
+          ], evidence_source: "M7 demo evidence", truth_source_stage_id: "M4", truth_checksum: "demo-scenario-checksum" }
+        }
+      }
+    };
+
+    const initialQuery = new URLSearchParams(window.location.search);
+    const state = { data: DEMO_DATA, renderedData: DEMO_DATA, source: "demo", interface: initialQuery.get("decision_interface") || initialQuery.get("interface") || "rule_based", activeBranch: "with_two_stage", selected: null, violationEvidence: [], formalRuns: [], formalOptions: null, formalSelection: null, requestSequence: 0, activeRequest: null };
+    const SPACING_DEFAULT = 1.10;
+    const ARROW_HEAD_SIZE = 1.50;
+    const $ = (id) => document.getElementById(id);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const toNumber = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+    const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[char]));
+    const branchNames = { without_two_stage: "不使用二階段框架", with_two_stage: "使用二階段框架" };
+    const branchShortNames = { without_two_stage: "不使用二階段", with_two_stage: "使用二階段" };
+
+    function setStatus(message, type = "") { $("status").className = `status ${type}`; $("status").textContent = message; }
+    function makeSvg(tag, attrs = {}) { const element = document.createElementNS(svgNS, tag); Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value)); return element; }
+    function validValue(value) { return value === true || value === 1 || value === "1" || value === "1.0"; }
+    function requiredErrors(data) {
+      const required = ["schema_version", "metadata", "topology", "scenario_gt", "branches"];
+      const errors = required.filter((key) => !data || data[key] === undefined).map((key) => `Missing required field: ${key}`);
+      ["without_two_stage", "with_two_stage"].forEach((key) => {
+        if (!data?.branches?.[key]) errors.push(`Missing required field: branches.${key}`);
+        else if (!data.branches[key].validation) errors.push(`Missing required field: branches.${key}.validation`);
+      });
+      return errors;
+    }
+    function pairMismatches(data) {
+      const metadata = data.metadata || {};
+      const topology = data.topology || {};
+      const without = data.branches?.without_two_stage || {};
+      const withBranch = data.branches?.with_two_stage || {};
+      const mismatches = [];
+      if (metadata.topology_id && topology.id && metadata.topology_id !== topology.id) mismatches.push("topology_id mismatch");
+      if (metadata.topology_checksum && topology.topology_checksum && metadata.topology_checksum !== topology.topology_checksum) mismatches.push("topology checksum mismatch");
+      if (metadata.capacity_checksum && topology.capacity_checksum && metadata.capacity_checksum !== topology.capacity_checksum) mismatches.push("capacity checksum mismatch");
+      [without, withBranch].forEach((branch, index) => {
+        const label = branchNames[index ? "with_two_stage" : "without_two_stage"];
+        const expectedInput = index ? "observation" : "scenario_gt";
+        if (branch.decision_input_type && branch.decision_input_type !== "unavailable" && branch.decision_input_type !== expectedInput) mismatches.push(label + ": unexpected M6 input");
+        if (branch.validation?.truth_source_stage_id !== "M4") mismatches.push(label + ": M7 truth source is not M4");
+        if (metadata.scenario_gt_checksum && branch.validation?.truth_checksum && branch.validation.truth_checksum !== metadata.scenario_gt_checksum) mismatches.push(label + ": scenario_gt checksum mismatch");
+      });
+      return mismatches;
+    }
+    function setOptions(id, values, selected, valueOf = (value) => value, labelOf = (value) => value) {
+      const select = $(id);
+      if (!select) return;
+      select.innerHTML = "";
+      select.disabled = false;
+      const selectedValue = selected === undefined || selected === null ? "" : String(selected);
+      const hasSelectedValue = values.some((value) => String(valueOf(value)) === selectedValue);
+      if (selectedValue && !hasSelectedValue) {
+        const unavailable = document.createElement("option");
+        unavailable.value = selectedValue;
+        unavailable.textContent = `目前選擇不可用：${selectedValue}`;
+        unavailable.disabled = true;
+        unavailable.selected = true;
+        select.appendChild(unavailable);
+      }
+      values.forEach((value) => {
+        const option = document.createElement("option");
+        option.value = String(valueOf(value));
+        option.textContent = String(labelOf(value));
+        option.selected = option.value === selectedValue;
+        select.appendChild(option);
+      });
+      if (!values.length) {
+        if (!selectedValue) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "Unavailable";
+          option.selected = true;
+          select.appendChild(option);
+        }
+        select.disabled = true;
+      }
+    }
+    function setSourceMode(source) {
+      $("controls").classList.toggle("formal-mode", source === "formal");
+      $("experimentSelection").classList.toggle("formal-mode", source === "formal");
+      $("dataSource").value = source;
+      $("runSelect").disabled = source !== "formal" || !state.formalRuns.length;
+      $("ruleSourceSelect").disabled = source !== "formal" || !state.formalOptions;
+      $("modelSelect").disabled = source !== "formal" || !state.formalOptions;
+    }
+    function renderSelectionSummary(data = state.data) {
+      if (!$("scenarioDisplay") || (state.source === "formal" && state.formalSelection)) return;
+      const metadata = data?.metadata || {};
+      $("scenarioDisplay").textContent = metadata.scenario_id || "—";
+      $("scenarioDisplay").title = metadata.scenario_gt_checksum || "";
+    }
+    function populateLocalControls(data) {
+      const metadata = data.metadata || {};
+      const topology = data.topology || {};
+      setOptions("topologySelect", [metadata.topology_id || topology.id || "unknown"], metadata.topology_id || topology.id);
+      setOptions("regimeSelect", [metadata.regime || "UNKNOWN"], metadata.regime || "UNKNOWN");
+      setOptions("trialSelect", [String(metadata.trial_index ?? 0)], String(metadata.trial_index ?? 0));
+      $("scenarioDisplay").textContent = metadata.scenario_id || "—";
+      $("scenarioDisplay").title = metadata.scenario_gt_checksum || "";
+      $("interfaceSelect").value = state.interface;
+      renderSelectionSummary(data);
+    }
+    const PREVIEW_API_BASE = window.location.hostname
+      ? window.location.protocol + "//" + window.location.hostname + ":8000/api/v1"
+      : "http://localhost:8000/api/v1";
+    function previewApiUrl(path) { return PREVIEW_API_BASE + path; }
+    async function fetchPreviewJson(path, signal) {
+      const response = await fetch(previewApiUrl(path), { signal });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = payload.detail || {};
+        const error = new Error(detail.message || "Preview API request failed.");
+        error.code = detail.code || "PREVIEW_REQUEST_FAILED";
+        throw error;
+      }
+      return payload;
+    }
+    function beginFormalRequest() {
+      if (state.activeRequest) state.activeRequest.abort();
+      const controller = new AbortController();
+      const sequence = ++state.requestSequence;
+      state.activeRequest = controller;
+      return { controller, sequence };
+    }
+    function currentFormalRequest(sequence) { return sequence === state.requestSequence; }
+    function clearRenderedData(message = "Select a formal Run to load preview.", type = "") {
+      state.data = null;
+      state.renderedData = null;
+      state.violationEvidence = [];
+      $("activeGraph").innerHTML = "";
+      $("activeStatus").textContent = "—";
+      $("activeStatus").className = "status-badge";
+      $("activeMetrics").innerHTML = "";
+      $("summaryGrid").innerHTML = "";
+      $("aggregateSummary").innerHTML = "";
+      $("violationEvidenceBody").innerHTML = `<tr><td colspan="5" class="evidence-empty">載入 preview 後顯示 M7 violation evidence。</td></tr>`;
+      $("insightText").textContent = "—";
+      $("pairBanner").className = "banner";
+      $("pairBanner").textContent = "Waiting for a paired preview…";
+      renderEmptyDetail();
+      renderSelectionSummary();
+      setStatus(message, type);
+    }
+    function previewErrorMessage(error) {
+      if (error?.name === "AbortError") return "Request cancelled.";
+      return error?.message || "Unable to load formal preview.";
+    }
+    function trialsForSelection(topologyId, regime, ruleSourceId) {
+      return (state.formalOptions?.trial_options || []).find((item) => item.rule_source_id === ruleSourceId && item.topology_id === topologyId && item.regime === regime)?.trials || [];
+    }
+    function modelsForTopology(topologyId, ruleSourceId) {
+      const seen = new Set();
+      return (state.formalOptions?.conditions || []).filter((item) => item.topology_id === topologyId && item.rule_source_id === ruleSourceId).filter((item) => {
+        if (seen.has(item.model_id)) return false;
+        seen.add(item.model_id);
+        return true;
+      });
+    }
+    function formalSelectionValidation(selection = state.formalSelection) {
+      const options = state.formalOptions;
+      if (!options || !selection) return { valid: false, reason: "Formal Run options are not loaded." };
+      if (!options.rule_sources?.some((item) => item.rule_source_id === selection.ruleSourceId)) {
+        return { valid: false, reason: `Rule source ${selection.ruleSourceId || "(empty)"} is not available in this Run.` };
+      }
+      if (!options.topologies?.some((item) => item.topology_id === selection.topologyId)) {
+        return { valid: false, reason: `Topology ${selection.topologyId || "(empty)"} is not available in this Run.` };
+      }
+      const modelItems = modelsForTopology(selection.topologyId, selection.ruleSourceId);
+      if (!modelItems.some((item) => item.model_id === selection.modelId)) {
+        return { valid: false, reason: `Model ${selection.modelId || "(empty)"} is not available for the selected rule source and topology.` };
+      }
+      const regimeItems = (options.trial_options || [])
+        .filter((item) => item.rule_source_id === selection.ruleSourceId && item.topology_id === selection.topologyId && item.trials.length)
+        .map((item) => item.regime);
+      if (!regimeItems.includes(selection.regime)) {
+        return { valid: false, reason: `Regime ${selection.regime || "(empty)"} has no available trial for the selected rule source and topology.` };
+      }
+      const trials = trialsForSelection(selection.topologyId, selection.regime, selection.ruleSourceId);
+      const trial = trials.find((item) => Number(item.trial_index) === Number(selection.trialIndex));
+      if (!trial) {
+        return { valid: false, reason: `Trial ${selection.trialIndex} is not available for the selected rule source, topology and regime.` };
+      }
+      if (!options.interfaces?.some((item) => item.id === selection.interface)) {
+        return { valid: false, reason: `Decision interface ${selection.interface || "(empty)"} is not available in this Run.` };
+      }
+      return { valid: true, trial };
+    }
+    function renderFormalControls() {
+      const options = state.formalOptions;
+      const selection = state.formalSelection;
+      if (!options || !selection) return;
+      setOptions("runSelect", state.formalRuns, selection.runId, (item) => item.run_id, (item) => item.run_id + " · " + (item.created_at || "SUCCEEDED"));
+      setOptions("ruleSourceSelect", options.rule_sources || [], selection.ruleSourceId, (item) => item.rule_source_id, (item) => item.rule_source_label);
+      setOptions("topologySelect", options.topologies, selection.topologyId, (item) => item.topology_id, (item) => item.topology_name);
+      const modelItems = modelsForTopology(selection.topologyId, selection.ruleSourceId);
+      setOptions("modelSelect", modelItems, selection.modelId, (item) => item.model_id, (item) => item.model_name + " · " + item.paradigm);
+      const regimeItems = (options.trial_options || []).filter((item) => item.rule_source_id === selection.ruleSourceId && item.topology_id === selection.topologyId && item.trials.length).map((item) => item.regime);
+      setOptions("regimeSelect", regimeItems, selection.regime);
+      const trials = trialsForSelection(selection.topologyId, selection.regime, selection.ruleSourceId);
+      setOptions("trialSelect", trials, selection.trialIndex, (item) => item.trial_index, (item) => String(item.trial_index));
+      const scenario = trials.find((item) => Number(item.trial_index) === Number(selection.trialIndex));
+      $("scenarioDisplay").textContent = scenario ? scenario.scenario_id : "Unavailable";
+      $("scenarioDisplay").title = scenario ? scenario.scenario_checksum : "";
+      setOptions("interfaceSelect", options.interfaces || [], selection.interface, (item) => item.id, (item) => item.id === "gai" && item.availability !== "available" ? "gai (unavailable)" : item.id);
+      setSourceMode("formal");
+      renderSelectionSummary();
+      const validation = formalSelectionValidation(selection);
+      if (!validation.valid) {
+        setStatus(`Selection unavailable: ${validation.reason}`, "error");
+      }
+    }
+    async function loadFormalRuns() {
+      state.formalSelection = null;
+      state.formalOptions = null;
+      const request = beginFormalRequest();
+      setSourceMode("formal");
+      clearRenderedData("Loading formal Run list…", "loading");
+      try {
+        const runs = await fetchPreviewJson("/decoupled-2-stage-experiment/topology-flow-preview/runs?limit=100", request.controller.signal);
+        if (!currentFormalRequest(request.sequence)) return;
+        state.formalRuns = runs;
+        if (!runs.length) throw new Error("No SUCCEEDED formal Run is available.");
+        const selected = runs.find((item) => item.run_id === initialQuery.get("run_id")) || runs[0];
+        await loadFormalOptions(selected.run_id);
+      } catch (error) {
+        if (!currentFormalRequest(request.sequence) || error?.name === "AbortError") return;
+        clearRenderedData("Formal Run unavailable: " + previewErrorMessage(error), "error");
+      }
+    }
+    async function loadFormalOptions(runId) {
+      const request = beginFormalRequest();
+      clearRenderedData("Loading formal Run options…", "loading");
+      try {
+        const options = await fetchPreviewJson("/decoupled-2-stage-experiment/topology-flow-preview/runs/" + encodeURIComponent(runId) + "/options", request.controller.signal);
+        if (!currentFormalRequest(request.sequence)) return;
+        state.formalOptions = options;
+        const defaults = options.default_selection || {};
+        state.formalSelection = {
+          runId,
+          ruleSourceId: initialQuery.get("rule_source_id") || defaults.rule_source_id || options.rule_sources?.[0]?.rule_source_id || "human_manual_v1",
+          topologyId: initialQuery.get("topology_id") || defaults.topology_id || options.topologies?.[0]?.topology_id || "",
+          modelId: defaults.model_id || "",
+          regime: initialQuery.get("regime") || defaults.regime || "LOW",
+          trialIndex: Number(initialQuery.get("trial_index") ?? defaults.trial_index ?? 0),
+          interface: initialQuery.get("decision_interface") || initialQuery.get("interface") || defaults.interface || "rule_based",
+        };
+        const sourceModels = modelsForTopology(state.formalSelection.topologyId, state.formalSelection.ruleSourceId);
+        state.formalSelection.modelId = initialQuery.get("model_id") || defaults.model_id || sourceModels[0]?.model_id || "";
+        renderFormalControls();
+        await loadFormalPreview();
+      } catch (error) {
+        if (!currentFormalRequest(request.sequence) || error?.name === "AbortError") return;
+        clearRenderedData("Formal Run options unavailable: " + previewErrorMessage(error), "error");
+      }
+    }
+    async function loadFormalPreview() {
+      const selection = state.formalSelection;
+      if (!selection || !state.formalOptions) return;
+      const validation = formalSelectionValidation(selection);
+      if (!validation.valid) {
+        clearRenderedData(`Selection unavailable: ${validation.reason}`, "error");
+        renderFormalControls();
+        return;
+      }
+      const request = beginFormalRequest();
+      clearRenderedData("Loading formal preview…", "loading");
+      const params = new URLSearchParams({
+        topology_id: selection.topologyId,
+        model_id: selection.modelId,
+        regime: selection.regime,
+        trial_index: String(selection.trialIndex),
+        interface: selection.interface,
+        rule_source_id: selection.ruleSourceId,
+      });
+      try {
+        const data = await fetchPreviewJson("/decoupled-2-stage-experiment/topology-flow-preview/runs/" + encodeURIComponent(selection.runId) + "/preview?" + params.toString(), request.controller.signal);
+        if (!currentFormalRequest(request.sequence)) return;
+        state.interface = selection.interface;
+        render(data);
+      } catch (error) {
+        if (!currentFormalRequest(request.sequence) || error?.name === "AbortError") return;
+        clearRenderedData("Formal preview unavailable: " + previewErrorMessage(error), "error");
+      }
+    }
+    function graphCanvas(data) {
+      const aspect = Math.max(0.45, toNumber(data.topology?.canvas_aspect_ratio, 1));
+      return { width: 100, height: 100 / aspect, aspect, padding: 8 };
+    }
+    function configureGraphCanvas(data, svg) {
+      const canvas = graphCanvas(data);
+      svg.setAttribute("viewBox", `0 0 ${canvas.width} ${canvas.height}`);
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      svg.setAttribute("data-topology-id", String(data.topology?.topology_id || data.topology?.id || ""));
+      svg.style.aspectRatio = String(canvas.aspect);
+      return canvas;
+    }
+    function baseNodePositions(data) {
+      const canvas = graphCanvas(data);
+      return Object.fromEntries((data.topology.nodes || []).map((node) => [String(node.id), {
+        x: canvas.padding + (canvas.width - canvas.padding * 2) * toNumber(node.x, .5),
+        y: canvas.padding + (canvas.height - canvas.padding * 2) * toNumber(node.y, .5),
+      }]));
+    }
+    function spacingScale() { return SPACING_DEFAULT; }
+    function scaleNodePositions(data, positions) {
+      const canvas = graphCanvas(data);
+      const scale = spacingScale();
+      const center = { x: canvas.width / 2, y: canvas.height / 2 };
+      const scaled = Object.fromEntries(Object.entries(positions).map(([nodeId, position]) => [nodeId, {
+        x: center.x + (position.x - center.x) * scale,
+        y: center.y + (position.y - center.y) * scale,
+      }]));
+      const radii = (data.topology.nodes || []).map((node) => displayNodeRadius(data, node));
+      const margin = Math.max(...radii, 0) + 1;
+      const points = Object.values(scaled);
+      if (!points.length) return scaled;
+      const bounds = {
+        minX: Math.min(...points.map((point) => point.x)),
+        maxX: Math.max(...points.map((point) => point.x)),
+        minY: Math.min(...points.map((point) => point.y)),
+        maxY: Math.max(...points.map((point) => point.y)),
+      };
+      const shiftX = bounds.minX < margin ? margin - bounds.minX : bounds.maxX > canvas.width - margin ? canvas.width - margin - bounds.maxX : 0;
+      const shiftY = bounds.minY < margin ? margin - bounds.minY : bounds.maxY > canvas.height - margin ? canvas.height - margin - bounds.maxY : 0;
+      return Object.fromEntries(Object.entries(scaled).map(([nodeId, position]) => [nodeId, {
+        x: position.x + shiftX,
+        y: position.y + shiftY,
+      }]));
+    }
+    function nodePositions(data) { return scaleNodePositions(data, baseNodePositions(data)); }
+    function spacingArrowSize() { return ARROW_HEAD_SIZE; }
+    function displayNodeRadius(data, node) {
+      const isExit = node?.node_type === "exit";
+      const topologyId = data.topology?.topology_id || data.topology?.id;
+      if (topologyId === "fcu") return isExit ? 2.35 : 2.65;
+      if (topologyId === "taichung_lantern_festival" || topologyId === "taipei_new_years_eve") return isExit ? 3.1 : 3.6;
+      return isExit ? 3.1 : 3.6;
+    }
+    function nodeRadiusAt(data, nodeId) {
+      const node = (data.topology?.nodes || []).find((item) => String(item.id) === String(nodeId));
+      return displayNodeRadius(data, node);
+    }
+    function referenceEdgePath(source, target, index, bendOverride) {
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const length = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+      const bend = bendOverride === undefined ? ((index % 5) - 2) * 0.7 : bendOverride;
+      const midX = (source.x + target.x) / 2 - (dy / length) * bend;
+      const midY = (source.y + target.y) / 2 + (dx / length) * bend;
+      return `M ${source.x} ${source.y} Q ${midX} ${midY} ${target.x} ${target.y}`;
+    }
+    function quadraticPoint(source, target, bend, progress) {
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const length = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+      const midX = (source.x + target.x) / 2 - (dy / length) * bend;
+      const midY = (source.y + target.y) / 2 + (dx / length) * bend;
+      const inverse = 1 - progress;
+      return {
+        x: inverse * inverse * source.x + 2 * inverse * progress * midX + progress * progress * target.x,
+        y: inverse * inverse * source.y + 2 * inverse * progress * midY + progress * progress * target.y,
+      };
+    }
+    function routeClearance(data, sourceId, targetId, source, target, bend, positions) {
+      const excluded = new Set([String(sourceId), String(targetId)]);
+      let minimum = Infinity;
+      for (const [nodeId, position] of Object.entries(positions)) {
+        if (excluded.has(String(nodeId))) continue;
+        const radius = nodeRadiusAt(data, nodeId);
+        for (let step = 1; step < 10; step += 1) {
+          const point = quadraticPoint(source, target, bend, step / 10);
+          minimum = Math.min(minimum, Math.hypot(point.x - position.x, point.y - position.y) - radius);
+        }
+      }
+      return minimum;
+    }
+    function routedEdgeGeometry(data, sourceId, targetId, source, target, index, positions) {
+      const baseBend = ((index % 5) - 2) * 0.7;
+      const candidates = [baseBend, baseBend - 1.5, baseBend + 1.5, baseBend - 3, baseBend + 3];
+      let best = { bend: baseBend, clearance: -Infinity, distance: Infinity, order: 0 };
+      candidates.forEach((bend, order) => {
+        const clearance = routeClearance(data, sourceId, targetId, source, target, bend, positions);
+        const distance = Math.abs(bend - baseBend);
+        if (clearance > best.clearance + 1e-9 || (Math.abs(clearance - best.clearance) <= 1e-9 && (distance < best.distance || (distance === best.distance && order < best.order)))) {
+          best = { bend, clearance, distance, order };
+        }
+      });
+      return { bend: best.bend, source, target };
+    }
+    function routedEdgePath(data, sourceId, targetId, source, target, index, positions) {
+      const geometry = routedEdgeGeometry(data, sourceId, targetId, source, target, index, positions);
+      return referenceEdgePath(geometry.source, geometry.target, index, geometry.bend);
+    }
+    function quadraticControlPoint(source, target, bend) {
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const length = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+      return {
+        x: (source.x + target.x) / 2 - (dy / length) * bend,
+        y: (source.y + target.y) / 2 + (dx / length) * bend,
+      };
+    }
+    function routedBoundaryPath(data, sourceId, targetId, source, target, index, positions) {
+      const geometry = routedEdgeGeometry(data, sourceId, targetId, source, target, index, positions);
+      const chordLength = Math.max(Math.hypot(target.x - source.x, target.y - source.y), 1);
+      const endpointGap = 0.25;
+      const startProgress = Math.min(0.42, (nodeRadiusAt(data, sourceId) + endpointGap) / chordLength);
+      const endProgress = Math.max(0.58, 1 - (nodeRadiusAt(data, targetId) + endpointGap) / chordLength);
+      const safeStart = Math.min(startProgress, 0.42);
+      const safeEnd = Math.max(endProgress, safeStart + 0.16);
+      const trimmedSource = quadraticPoint(source, target, geometry.bend, safeStart);
+      const trimmedTarget = quadraticPoint(source, target, geometry.bend, Math.min(safeEnd, 0.98));
+      const control = quadraticControlPoint(source, target, geometry.bend);
+      return `M ${trimmedSource.x} ${trimmedSource.y} Q ${control.x} ${control.y} ${trimmedTarget.x} ${trimmedTarget.y}`;
+    }
+    function violationForNode(branch, nodeId) { return (branch.validation?.violations || []).filter((item) => item.zone_id === nodeId || item.node_id === nodeId); }
+    function violationForAction(branch, action) {
+      return (branch.validation?.violations || []).filter((item) => {
+        if ((item.action_ids || []).includes(action.action_id)) return true;
+        if (item.source_id !== undefined && item.target_id !== undefined && String(item.source_id) === String(action.source_id) && String(item.target_id) === String(action.target_id)) return true;
+        const nodeId = item.zone_id ?? item.node_id;
+        if (nodeId === undefined || nodeId === null || nodeId === "") return false;
+        if (item.rule_code === "CAPACITY_CONSTRAINT") return String(action.target_id) === String(nodeId);
+        if (item.rule_code === "SOURCE_UNDERFLOW") return String(action.source_id) === String(nodeId);
+        if (item.rule_code === "FLOW_CONSERVATION") return String(action.source_id) === String(nodeId) || String(action.target_id) === String(nodeId);
+        return false;
+      });
+    }
+    function statusLabel(branch) { if (branch.availability === "unavailable") return "UNAVAILABLE"; if (branch.validation?.valid === null || branch.validation?.valid === undefined) return "UNAVAILABLE"; return validValue(branch.validation.valid) ? "VALID" : "INVALID"; }
+    function statusClass(label) { return label === "VALID" ? "valid" : label === "INVALID" ? "invalid" : ""; }
+    function humanStatus(label) { return label === "VALID" ? "通過驗證" : label === "INVALID" ? "未通過驗證" : "尚無結果"; }
+    function humanPairStatus(status) { return status === "VALID" ? "配對有效" : status === "MISMATCH" ? "無法比較" : "尚無完整配對結果"; }
+    function populationBefore(data, branch, nodeId) { return toNumber(data.scenario_gt?.[nodeId]); }
+    function nodeTooltip(data, branch, node) {
+      const id = String(node.id); const post = branch.validation?.post_population?.[id]; const incoming = (branch.actions || []).filter((action) => action.target_id === id).reduce((sum, action) => sum + toNumber(action.move_count), 0); const outgoing = (branch.actions || []).filter((action) => action.source_id === id).reduce((sum, action) => sum + toNumber(action.move_count), 0); const violations = violationForNode(branch, id);
+      const status = branch.availability === "unavailable" ? "Unavailable" : violations.length ? violations.map((item) => esc(item.rule_code)).join(", ") : "no M7 violation";
+      return `<strong>${esc(node.label || `Zone ${id}`)}</strong><br>GT: ${populationBefore(data, branch, id)}<br>${branch.decision_input_type === "observation" ? `Obs: ${toNumber(branch.observed_population?.[id])}<br>` : ""}Capacity: ${toNumber(node.capacity)}<br>In: ${incoming} · Out: ${outgoing}<br>After: ${post === undefined ? "—" : post}<br>Status: ${status}`;
+    }
+    function showTooltip(event, html) { const tooltip = $("tooltip"); tooltip.innerHTML = html; tooltip.style.display = "block"; tooltip.style.left = `${Math.min(event.clientX + 12, window.innerWidth - 275)}px`; tooltip.style.top = `${Math.min(event.clientY + 12, window.innerHeight - 140)}px`; }
+    function hideTooltip() { $("tooltip").style.display = "none"; }
+    function renderEmptyDetail() { const detail = $("detail"); detail.className = "detail empty"; $("detailContent").innerHTML = `<p style="margin-top:8px">Hover a node or flow for a quick read. Click to pin the evidence here.</p>`; }
+    function renderDetail(title, items, violations = []) { const detail = $("detail"); detail.className = "detail"; const violationList = violations.length ? `<ul class="error-list">${violations.map((item) => `<li><strong>${esc(item.rule_code || "UNKNOWN_RULE_CODE")}</strong> · ${esc(item.original_code || "M7 未提供")}<br>${esc(evidenceText(item))}</li>`).join("")}</ul>` : ""; $("detailContent").innerHTML = `<h2>${esc(title)}</h2><div class="detail-grid">${items.map(([label, value]) => `<div class="detail-item"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("")}</div>${violationList}`; }
+    function drawPanel(data, branchKey, svgId) {
+      const branch = data.branches[branchKey]; const svg = $(svgId); svg.innerHTML = ""; const canvas = configureGraphCanvas(data, svg); const positions = nodePositions(data);
+      const defs = makeSvg("defs");
+      const arrowSize = spacingArrowSize();
+      const marker = makeSvg("marker", { id: `${svgId}-arrow`, markerWidth: arrowSize, markerHeight: arrowSize, refX: arrowSize, refY: arrowSize / 2, orient: "auto" }); marker.appendChild(makeSvg("path", { d: `M0,0 L${arrowSize},${arrowSize / 2} L0,${arrowSize} z`, fill: "#245b74" })); defs.appendChild(marker);
+      const violationMarker = makeSvg("marker", { id: `${svgId}-violation-arrow`, markerWidth: arrowSize, markerHeight: arrowSize, refX: arrowSize, refY: arrowSize / 2, orient: "auto" }); violationMarker.appendChild(makeSvg("path", { d: `M0,0 L${arrowSize},${arrowSize / 2} L0,${arrowSize} z`, fill: "#b42318" })); defs.appendChild(violationMarker); svg.appendChild(defs);
+      const baseLayer = makeSvg("g", { class: "base-layer" }); const edgeOverlayLayer = makeSvg("g", { class: "edge-overlay-layer" }); const actionLayer = makeSvg("g", { class: "action-layer flow-layer" }); const hitLayer = makeSvg("g", { class: "hit-layer" }); const nodeLayer = makeSvg("g", { class: "node-layer" }); const labelLayer = makeSvg("g", { class: "label-layer" }); const violationLayer = makeSvg("g", { class: "violation-overlay-layer" });
+      svg.appendChild(baseLayer); svg.appendChild(edgeOverlayLayer); svg.appendChild(actionLayer); svg.appendChild(hitLayer); svg.appendChild(nodeLayer); svg.appendChild(labelLayer); svg.appendChild(violationLayer);
+      (data.topology.edges || []).forEach((edge, index) => { const source = positions[edge.source], target = positions[edge.target]; if (!source || !target) return; const path = routedBoundaryPath(data, edge.source, edge.target, source, target, index, positions); baseLayer.appendChild(makeSvg("path", { d: path, class: "base-edge", "data-edge-source": edge.source, "data-edge-target": edge.target })); edgeOverlayLayer.appendChild(makeSvg("path", { d: path, class: "base-edge edge-overlay", "data-edge-source": edge.source, "data-edge-target": edge.target })); });
+      (branch.actions || []).forEach((action, actionIndex) => {
+        const source = positions[action.source_id], target = positions[action.target_id]; if (!source || !target) return;
+        const violations = violationForAction(branch, action); const invalid = violations.length > 0; const flowViolation = violations.some((item) => ["FLOW_CONSERVATION", "SOURCE_UNDERFLOW"].includes(item.rule_code));
+        const path = routedBoundaryPath(data, action.source_id, action.target_id, source, target, actionIndex, positions);
+        const flowTooltip = (event) => showTooltip(event, `<strong>${esc(action.action_id)}</strong><br>${esc(action.source_id)} → ${esc(action.target_id)}<br>Move count: ${toNumber(action.move_count)}<br>Status: ${invalid ? "M7 violation" : "M7 evidence has no violation for this action"}`);
+        const flowDetail = () => renderDetail(`Selected flow: ${action.source_id} → ${action.target_id}`, [["Action", action.action_id], ["Move count", action.move_count], ["Parse status", action.parse_valid ? "valid" : "invalid"], ["Evidence source", branch.availability === "unavailable" ? "Unavailable" : "M7"]], violations);
+        const line = makeSvg("path", { d: path, fill: "none", class: "flow-edge", "marker-end": `url(#${svgId}-arrow)` });
+        line.addEventListener("mouseenter", flowTooltip); line.addEventListener("mouseleave", hideTooltip); line.addEventListener("click", flowDetail); actionLayer.appendChild(line);
+        const hit = makeSvg("path", { d: path, fill: "none", class: "flow-hit", tabindex: "0", "data-action-id": action.action_id, "data-source-id": action.source_id, "data-target-id": action.target_id });
+        hit.addEventListener("mouseenter", flowTooltip); hit.addEventListener("mouseleave", hideTooltip); hit.addEventListener("click", flowDetail); hit.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") flowDetail(); }); hitLayer.appendChild(hit);
+        if (invalid) violationLayer.appendChild(makeSvg("path", { d: path, fill: "none", class: `flow-edge violation-overlay${flowViolation ? " flow-violation" : ""}`, "marker-end": `url(#${svgId}-violation-arrow)` }));
+      });
+      (data.topology.nodes || []).forEach((node) => { const id = String(node.id); const position = positions[id]; if (!position) return; const violations = violationForNode(branch, id); const isExit = node.node_type === "exit"; const isSpecial = !isExit && id.startsWith("P"); const group = makeSvg("g", { transform: `translate(${position.x} ${position.y})`, tabindex: "0", "data-node-id": id }); const circle = makeSvg("circle", { r: displayNodeRadius(data, node), class: `node-circle${isExit ? " exit" : isSpecial ? " special" : ""}${violations.length ? " violation" : ""}` }); group.appendChild(circle); const label = makeSvg("text", { x: position.x, y: position.y, class: "node-label", "text-anchor": "middle" }); label.textContent = id; group.appendChild(label); const post = branch.validation?.post_population?.[id]; const detailItems = [["Zone", node.label || id], ["GT", populationBefore(data, branch, id)], ["Capacity", node.capacity], ["After", post === undefined ? "—" : post], ["Evidence", branch.availability === "unavailable" ? "Unavailable" : "M7"]]; if (branch.decision_input_type === "observation") detailItems.splice(2, 0, ["Obs", toNumber(branch.observed_population?.[id])]); group.addEventListener("mouseenter", (event) => showTooltip(event, nodeTooltip(data, branch, node))); group.addEventListener("mouseleave", hideTooltip); group.addEventListener("click", () => renderDetail(`Selected: ${node.label || `Zone ${id}`}`, detailItems, violations)); group.addEventListener("keydown", (event) => { if (event.key === "Enter") group.click(); }); nodeLayer.appendChild(group); labelLayer.appendChild(label); });
+      if (branch.availability === "unavailable") { const empty = makeSvg("text", { x: canvas.width / 2, y: canvas.height * .48, class: "graph-empty" }); empty.textContent = "Unavailable"; svg.appendChild(empty); const note = makeSvg("text", { x: canvas.width / 2, y: canvas.height * .55, class: "graph-empty-note" }); note.textContent = "No decision or validation artifact"; svg.appendChild(note); }
+    }
+    function renderPanelMetrics(data, branchKey, targetId) { const branch = data.branches[branchKey]; if (branch.availability === "unavailable") { $(targetId).innerHTML = [["人流 action", "尚無結果"], ["M7 違規", "尚無結果"], ["容量超限節點", "尚無結果"]].map(([label, value]) => `<div class="metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></div>`).join(""); return; } const actions = branch.actions || []; const violations = branch.validation?.violations || []; const overflow = violations.filter((item) => item.rule_code === "CAPACITY_CONSTRAINT").length; $(targetId).innerHTML = [["人流 action", actions.length], ["M7 違規", violations.length], ["容量超限節點", overflow]].map(([label, value]) => `<div class="metric"><strong>${esc(value)}</strong><small>${esc(label)}</small></div>`).join(""); }
+    function violationKey(item) { if (item.rule_code === "CAPACITY_CONSTRAINT") return `${item.rule_code}:${item.zone_id || item.node_id || "?"}`; return `${item.rule_code}:${item.source_id || "?"}->${item.target_id || "?"}:${(item.action_ids || []).join(",")}`; }
+    function addedViolations(withBranch, without) { const before = new Set((without.validation?.violations || []).map(violationKey)); return (withBranch.validation?.violations || []).filter((item) => !before.has(violationKey(item))); }
+    function actionFingerprint(branch) { return (branch.actions || []).map((action) => `${action.source_id}->${action.target_id}:${action.move_count}`).sort().join("|"); }
+    function violationCategory(item) {
+      if (item.rule_code === "CAPACITY_CONSTRAINT" || item.zone_id || item.node_id) return "Node";
+      if (item.rule_code === "TOPOLOGY_CONNECTIVITY" || item.rule_code === "UNKNOWN_ZONE") return "Flow / edge";
+      if (item.rule_code === "SOURCE_UNDERFLOW") return "Source";
+      if (item.rule_code === "FLOW_CONSERVATION") return "Global";
+      return "Output / rule";
+    }
+    function categoryLabel(category) { return { Node: "節點容量違反", "Flow / edge": "流向／拓撲違反", Source: "來源流量違反", Global: "流量守恆違反", "Output / rule": "輸出／規則違反" }[category] || category; }
+    function categorySummary(items) {
+      const counts = items.reduce((result, item) => { const category = violationCategory(item); result[category] = (result[category] || 0) + 1; return result; }, {});
+      return Object.entries(counts).map(([category, count]) => `${count} 筆${categoryLabel(category)}`).join("、") || "0 筆 M7 violation";
+    }
+    function nodeName(data, nodeId) { const node = (data.topology?.nodes || []).find((item) => String(item.id) === String(nodeId)); return node ? `${node.label || `Zone ${nodeId}`} (${nodeId})` : `Node ${nodeId}`; }
+    function locationText(data, item) {
+      if (item.source_id !== undefined || item.target_id !== undefined) return `${nodeName(data, item.source_id ?? "?")} → ${nodeName(data, item.target_id ?? "?")}`;
+      if (item.node_id !== undefined || item.zone_id !== undefined) return nodeName(data, item.node_id ?? item.zone_id);
+      if (violationCategory(item) === "Source") return item.source_id !== undefined ? nodeName(data, item.source_id) : "Source node";
+      if (violationCategory(item) === "Global") return "All flows";
+      return "Decision output";
+    }
+    function evidenceValue(item, key, label) { return Object.prototype.hasOwnProperty.call(item, key) && item[key] !== null && item[key] !== "" ? `${label} = ${item[key]}` : ""; }
+    function evidenceText(item) {
+      const values = [
+        evidenceValue(item, "post_population", "post"),
+        evidenceValue(item, "capacity", "capacity"),
+        evidenceValue(item, "violation_margin", "margin"),
+        evidenceValue(item, "outgoing", "outgoing"),
+        evidenceValue(item, "incoming", "incoming"),
+        evidenceValue(item, "visible_population", "visible population"),
+        evidenceValue(item, "truth", "truth"),
+        evidenceValue(item, "expected", "expected"),
+        evidenceValue(item, "actual", "actual"),
+      ].filter(Boolean);
+      if (item.message) values.push(String(item.message));
+      return values.length ? values.join(" · ") : "M7 未提供";
+    }
+    function actionText(item) { return Array.isArray(item.action_ids) && item.action_ids.length ? item.action_ids.join(", ") : "M7 未提供"; }
+    function violationDetailItems(data, item) { return [["Category", categoryLabel(violationCategory(item))], ["Location", locationText(data, item)], ["Rule", item.rule_code || "UNKNOWN_RULE_CODE"], ["Original code", item.original_code || "M7 未提供"], ["Action ID", actionText(item)], ["M7 evidence", evidenceText(item)]]; }
+    function renderViolationEvidence(data) {
+      const records = [];
+      ["without_two_stage", "with_two_stage"].forEach((branchKey) => (data.branches?.[branchKey]?.validation?.violations || []).forEach((item) => records.push({ branchKey, item })));
+      state.violationEvidence = records;
+      if (!records.length) { $("violationEvidenceBody").innerHTML = `<tr><td colspan="5" class="evidence-empty">目前 M7 沒有記錄 violation；這不等於所有規則都已被證明沒有問題。</td></tr>`; return; }
+      $("violationEvidenceBody").innerHTML = records.map(({ branchKey, item }, index) => `<tr data-evidence-index="${index}" tabindex="0"><td>${esc(branchNames[branchKey])}</td><td>${esc(categoryLabel(violationCategory(item)))}</td><td>${esc(locationText(data, item))}</td><td><span class="evidence-code">${esc(item.rule_code || "UNKNOWN_RULE_CODE")}</span><span class="evidence-original">${esc(item.original_code || "M7 未提供")}</span></td><td>${esc(evidenceText(item))}<br><span class="evidence-original">Action: ${esc(actionText(item))}</span></td></tr>`).join("");
+      [...$("violationEvidenceBody").querySelectorAll("tr[data-evidence-index]")].forEach((row) => { const focus = () => focusViolation(Number(row.dataset.evidenceIndex)); row.addEventListener("click", focus); row.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); focus(); } }); });
+    }
+    function triggerSvgClick(element) { if (element) element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window })); }
+    function focusViolation(index) {
+      const record = state.violationEvidence[index]; const data = state.renderedData || state.data; if (!record || !data) return;
+      setActiveBranch(record.branchKey); const item = record.item; const category = violationCategory(item); const nodeId = item.node_id ?? item.zone_id;
+      if (category === "Node" && nodeId !== undefined) { const node = [...document.querySelectorAll("#activeGraph g[data-node-id]")].find((element) => element.getAttribute("data-node-id") === String(nodeId)); if (node) { triggerSvgClick(node); node.scrollIntoView({ behavior: "smooth", block: "center" }); return; } }
+      if ((category === "Flow / edge" || category === "Source") && (item.source_id !== undefined || item.target_id !== undefined || (item.action_ids || []).length)) {
+        const actionId = item.action_ids?.[0]; const flow = [...document.querySelectorAll("#activeGraph .flow-hit")].find((element) => actionId ? element.getAttribute("data-action-id") === String(actionId) : element.getAttribute("data-source-id") === String(item.source_id ?? "") && element.getAttribute("data-target-id") === String(item.target_id ?? "")); if (flow) { triggerSvgClick(flow); flow.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+      }
+      renderDetail(`Selected violation: ${item.rule_code || "UNKNOWN_RULE_CODE"}`, violationDetailItems(data, item), [item]);
+    }
+    function renderSummary(data, mismatch) {
+      const without = data.branches.without_two_stage;
+      const withBranch = data.branches.with_two_stage;
+      const withoutStatus = statusLabel(without);
+      const withStatus = statusLabel(withBranch);
+      const added = mismatch ? [] : addedViolations(withBranch, without);
+      const unavailable = without.availability === "unavailable" || withBranch.availability === "unavailable";
+      const count = (branch, key) => branch.availability === "unavailable" ? "尚無結果" : key === "actions" ? (branch.actions || []).length : (branch.validation?.violations || []).length;
+      const pairStatus = mismatch ? "MISMATCH" : unavailable ? "PAIRED / UNAVAILABLE" : "VALID";
+      const card = (label, value, danger = false) => `<div class="summary-card${danger ? " danger" : ""}"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div></div>`;
+      $("summaryGrid").innerHTML = [
+        card("不使用二階段 · M7 結果", humanStatus(withoutStatus), withoutStatus === "INVALID"),
+        card("不使用二階段 · action 數", count(without, "actions")),
+        card("使用二階段 · M7 結果", humanStatus(withStatus), withStatus === "INVALID"),
+        card("使用二階段 · action 數", count(withBranch, "actions")),
+        card("M7 判斷違規（不使用／使用二階）", `${count(without, "violations")} / ${count(withBranch, "violations")}`, !unavailable && (without.validation?.violations?.length || withBranch.validation?.violations?.length)),
+        card("配對條件", humanPairStatus(pairStatus), mismatch),
+      ].join("");
+
+      let conclusion = "目前 M7 沒有記錄兩個分支的差異性違規；這不等於所有規則都已被證明沒有問題。";
+      let conclusionClass = "";
+      if (mismatch) {
+        conclusion = "兩側資料不是有效的同一情境配對，因此不產生 Perception 誤差影響的比較結論。";
+        conclusionClass = "error";
+      } else if (unavailable) {
+        conclusion = "目前至少一側沒有可用的 decision 或 validation 結果；系統不建立假 action、假違規或可靠度結論。";
+        conclusionClass = "warning";
+      } else if (withoutStatus === "VALID" && withStatus === "INVALID") {
+        conclusion = `正確人口輸入通過 M7；改用 Perception 觀測人口後未通過 M7。這個 trial 新增 ${added.length} 筆 M7 違規：${categorySummary(added)}。這是配對的 M7 證據，不是前端自行推導的因果結論。`;
+        conclusionClass = "warning";
+      } else if (withoutStatus === "VALID" && withStatus === "VALID" && actionFingerprint(without) !== actionFingerprint(withBranch)) {
+        conclusion = "兩個分支都通過 M7，但使用二階段後的人流分配不同；目前沒有記錄新的 validation violation。";
+      } else if (withoutStatus === "VALID" && withStatus === "VALID") {
+        conclusion = "兩個分支都通過 M7；在這個 trial 中，使用觀測人口沒有造成可觀察的驗證失敗。";
+      } else if (withoutStatus === "INVALID" && withStatus === "INVALID") {
+        conclusion = "正確人口輸入與觀測人口輸入都未通過 M7，因此不能只把 failure 歸因於 Perception。請展開下方違規證據比較兩側原因。";
+        conclusionClass = "warning";
+      } else if (withoutStatus === "INVALID" && withStatus === "VALID") {
+        conclusion = "使用二階段分支通過 M7，但正確人口分支未通過；這是需要調查的配對結果，不能僅憑單一 trial 宣稱框架提升可靠度。";
+        conclusionClass = "warning";
+      }
+      $("pairedConclusion").className = `paired-conclusion${conclusionClass ? ` ${conclusionClass}` : ""}`;
+      $("pairedConclusion").innerHTML = `<strong>這筆 trial 告訴我們什麼？</strong>${esc(conclusion)}`;
+      $("insightText").textContent = conclusion;
+      renderViolationEvidence(data);
+    }
+    function renderAggregateSummary(data) {
+      const summary = data?.result_summary;
+      if (!summary) {
+        $("aggregateSummary").innerHTML = "";
+        return;
+      }
+      const value = (item) => item === null || item === undefined ? "unavailable" : Number(item).toFixed(3);
+      $("aggregateSummary").innerHTML = `
+        <div class="aggregate-summary-heading">
+          <strong>多次試驗的整體配對結果</strong>
+          <span>上方圖形是單一 trial 證據；下方數值是 M8 聚合結果，兩者不是同一層級。</span>
+        </div>
+        <div class="aggregate-summary-grid">
+          <div><strong>${esc(value(summary.r_ideal))}</strong><small>理想參考通過率（R_ideal）</small><span>通過 ${esc(summary.ideal_valid_trial_count ?? "尚無結果")} / 執行 ${esc(summary.ideal_executed_trial_count ?? "尚無結果")}</span></div>
+          <div><strong>${esc(value(summary.r_deploy))}</strong><small>部署通過率（R_deploy）</small><span>通過 ${esc(summary.deployment_valid_trial_count ?? "尚無結果")} / 執行 ${esc(summary.deployment_executed_trial_count ?? "尚無結果")}</span></div>
+          <div><strong>${esc(value(summary.delta_r))}</strong><small>可靠度差異（Delta R）</small><span>R_ideal − R_deploy</span></div>
+          <div><strong>${esc(summary.availability || "尚無結果")}</strong><small>結果狀態</small><span>${esc(summary.execution_outcome_status || "尚無結果")}</span></div>
+        </div>`;
+    }
+    function renderActiveBranch(data = state.renderedData || state.data) {
+      if (!data?.branches?.[state.activeBranch]) return;
+      const branch = data.branches[state.activeBranch];
+      const label = branchNames[state.activeBranch];
+      const input = branch.decision_input_type === "scenario_gt" ? "scenario_gt" : branch.decision_input_type === "observation" ? "observed population" : "Unavailable";
+      $("activeBranchTitle").textContent = label;
+      $("activeBranchDescription").textContent = state.activeBranch === "without_two_stage"
+        ? `決策輸入：正確人口（${input}） · M7：使用 M4 正確人口獨立驗證`
+        : `決策輸入：Perception 觀測人口（${input}） · M7：使用 M4 正確人口獨立驗證`;
+      const activeStatus = statusLabel(branch);
+      $("activeStatus").textContent = humanStatus(activeStatus);
+      $("activeStatus").className = "status-badge " + statusClass(activeStatus);
+      $("withoutBranchButton").setAttribute("aria-pressed", String(state.activeBranch === "without_two_stage"));
+      $("withBranchButton").setAttribute("aria-pressed", String(state.activeBranch === "with_two_stage"));
+      drawPanel(data, state.activeBranch, "activeGraph");
+      renderPanelMetrics(data, state.activeBranch, "activeMetrics");
+    }
+    function setActiveBranch(branchKey) {
+      if (!branchNames[branchKey]) return;
+      state.activeBranch = branchKey;
+      renderActiveBranch();
+    }
+    function render(data = state.data) {
+      const errors = requiredErrors(data);
+      if (errors.length) {
+        setStatus("Cannot render preview: " + errors[0], "error");
+        $("pairBanner").className = "banner mismatch";
+        $("pairBanner").textContent = errors.join(" · ");
+        renderSelectionSummary(data);
+        return;
+      }
+      state.data = data;
+      if (state.source !== "formal") populateLocalControls(data);
+      else {
+        $("scenarioDisplay").textContent = data.metadata?.scenario_id || "—";
+        $("scenarioDisplay").title = data.metadata?.scenario_gt_checksum || "";
+      }
+      const mismatches = pairMismatches(data);
+      $("pairBanner").className = "banner" + (mismatches.length ? " mismatch" : "");
+      $("pairBanner").textContent = mismatches.length
+        ? "無法比較 · 配對資料不一致 · " + mismatches.join(" · ")
+        : data.metadata.demo
+          ? "DEMO DATA — NOT AN EXPERIMENT RESULT · 配對條件一致"
+          : "配對有效 · 兩側使用相同場景與 M7 驗證標準";
+      const loadedMessage = data.metadata.demo
+        ? "Demo loaded. This data is not an experiment result."
+        : state.source === "formal"
+          ? "Loaded formal Run " + data.metadata.run_id + " · read-only preview"
+          : "Loaded local preview · read-only preview";
+      setStatus(loadedMessage, data.metadata.demo ? "warn" : "ok");
+      const requestedGai = state.interface === "gai_reserved" || state.interface === "gai";
+      const interfaceUnavailable = requestedGai && data.metadata.interface_type !== state.interface;
+      const displayData = interfaceUnavailable ? {
+        ...data,
+        branches: {
+          without_two_stage: { availability: "unavailable", decision_input_type: "unavailable", observed_population: {}, actions: [], validation: { valid: null, violations: [], post_population: {}, truth_source_stage_id: "M4", truth_checksum: data.metadata.scenario_gt_checksum } },
+          with_two_stage: { availability: "unavailable", decision_input_type: "unavailable", observed_population: {}, actions: [], validation: { valid: null, violations: [], post_population: {}, truth_source_stage_id: "M4", truth_checksum: data.metadata.scenario_gt_checksum } }
+        }
+      } : data;
+      state.renderedData = displayData;
+      renderSelectionSummary(data);
+      renderActiveBranch(displayData);
+      renderAggregateSummary(displayData);
+      renderSummary(displayData, mismatches.length > 0 || interfaceUnavailable);
+    }
+    function loadLocalJson(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          state.source = "local";
+          state.formalOptions = null;
+          state.formalSelection = null;
+          state.interface = parsed.metadata?.interface_type || "rule_based";
+          setSourceMode("local");
+          render(parsed);
+        } catch (error) {
+          clearRenderedData("Cannot render preview: invalid JSON (" + error.message + ")", "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+    $("loadJson").addEventListener("click", () => $("jsonFile").click());
+    $("jsonFile").addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (file) loadLocalJson(file);
+    });
+    $("resetDemo").addEventListener("click", () => {
+      state.source = "demo";
+      state.formalRuns = [];
+      state.formalOptions = null;
+      state.formalSelection = null;
+      state.interface = "rule_based";
+      state.activeBranch = "with_two_stage";
+      setSourceMode("demo");
+      render(DEMO_DATA);
+    });
+    $("dataSource").addEventListener("change", (event) => {
+      if (event.target.value === "formal") {
+        state.source = "formal";
+        loadFormalRuns();
+      } else if (event.target.value === "local") {
+        state.source = "local";
+        setSourceMode("local");
+        clearRenderedData("Choose a Local JSON file to load.", "loading");
+      } else {
+        state.source = "demo";
+        state.interface = "rule_based";
+        setSourceMode("demo");
+        render(DEMO_DATA);
+      }
+    });
+    $("runSelect").addEventListener("change", () => loadFormalOptions($("runSelect").value));
+    $("ruleSourceSelect").addEventListener("change", () => {
+      if (state.source !== "formal" || !state.formalSelection) return;
+      state.formalSelection.ruleSourceId = $("ruleSourceSelect").value;
+      renderFormalControls();
+      loadFormalPreview();
+    });
+    $("topologySelect").addEventListener("change", () => {
+      if (state.source !== "formal" || !state.formalSelection) return;
+      state.formalSelection.topologyId = $("topologySelect").value;
+      renderFormalControls();
+      loadFormalPreview();
+    });
+    $("modelSelect").addEventListener("change", () => {
+      if (state.source !== "formal" || !state.formalSelection) return;
+      state.formalSelection.modelId = $("modelSelect").value;
+      renderFormalControls();
+      loadFormalPreview();
+    });
+    $("regimeSelect").addEventListener("change", () => {
+      if (state.source !== "formal" || !state.formalSelection) return;
+      state.formalSelection.regime = $("regimeSelect").value;
+      renderFormalControls();
+      loadFormalPreview();
+    });
+    $("trialSelect").addEventListener("change", () => {
+      if (state.source !== "formal" || !state.formalSelection) return;
+      state.formalSelection.trialIndex = Number($("trialSelect").value);
+      renderFormalControls();
+      loadFormalPreview();
+    });
+    $("interfaceSelect").addEventListener("change", () => {
+      state.interface = $("interfaceSelect").value;
+      if (state.source === "formal") {
+        state.formalSelection.interface = state.interface;
+        loadFormalPreview();
+      } else if (state.data) {
+        render(state.data);
+      }
+    });
+    $("withoutBranchButton").addEventListener("click", () => setActiveBranch("without_two_stage"));
+    $("withBranchButton").addEventListener("click", () => setActiveBranch("with_two_stage"));
+    if (initialQuery.get("run_id")) {
+      state.source = "formal";
+      $("dataSource").value = "formal";
+      setSourceMode("formal");
+      void loadFormalRuns();
+    } else {
+      setSourceMode("demo");
+      render(DEMO_DATA);
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+profile_id: decoupled_2_stage_rule_source_comparison_v1
+display_name: Decoupled 2-Stage Rule Source Comparison
+run_purpose: exploratory_rule_source_interface_comparison
+rule_sources:
+  - id: human_manual_v1
+    label: 人工規則
+    package: Data/Topology資料
+  - id: ai_generated_derived_v1
+    label: AI 生成規則
+    package: Data/Topology資料/AI生成
+decision_interfaces:
+  - id: rule_based
+    availability: available
+  - id: gai
+    availability: unavailable_until_provider_configured
+framework_conditions:
+  - id: w/o Two-stage framework
+    trial_type: ideal
+    decision_input: scenario_gt
+  - id: w/ Two-stage framework
+    trial_type: deployment
+    decision_input: observed_population
+pairing:
+  scenario_key: topology_id__ground_truth_regime__scenario_index
+  observation_key: topology_id__model_id__ground_truth_regime__trial_index
+  shared_across_rule_sources: true
+m7_validation:
+  rule_source_id: human_manual_v1
+  truth_source_stage_id: M4
+  independent_gold_standard: true
+outputs:
+  rows_per_topology_model_regime: 8
+  availability_policy: GAI rows remain unavailable and null until provider trace exists
+  metric_source: M8 canonical aggregate rows
+governance:
+  ai_bundle_note: AI rule bundle is deterministically materialized from AI map/neighbors; contract fields remain system-governed.
+  unavailable_is_not_zero: true

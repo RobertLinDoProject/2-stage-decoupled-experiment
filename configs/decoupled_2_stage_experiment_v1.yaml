@@ -1,0 +1,91 @@
+profile_id: decoupled_2_stage_experiment_v1
+profile_version: 2
+purpose: Generate paired ideal/deployment decoupled two-stage experiment tables from formal A/B data.
+
+inputs:
+  data_root: Data
+  topology_root: Data/Topology資料
+  perception_root: Data/Perception資料
+  topology_sets:
+    - topology_id: fcu
+      map: fcu_map_neww.json
+      neighbors: fcu_neighbors.json
+      rules: fcu_rule.json
+    - topology_id: taichung_lantern_festival
+      map: Taichung Lantern Festival_map_neww.json
+      neighbors: Taichung Lantern Festival_neighbors.json
+      rules: Taichung Lantern Festival_rule.json
+    - topology_id: taipei_new_years_eve
+      map: Taipei New Year's Eve_map_neww.json
+      neighbors: Taipei New Year's Eve_neighbors.json
+      rules: Taipei New Year's Eve_rule.json
+  perception_files:
+    benchmark_samples: A1_benchmark_samples_combined.csv
+    model_registry: A2_perception_model_registry.csv
+    model_predictions: A3_model_predictions_raw.csv
+
+experiment_matrix:
+  topology_selection: all
+  model_selection: all_paper_eligible_from_a2_model_registry
+  expected_topology_count: 3
+  expected_model_count: 5
+  expected_condition_count: 15
+  split: test
+  root_seed: 114
+  trial_count_per_condition: 30
+  scenarios_per_regime: 8
+  density_regimes: [LOW, MEDIUM, HIGH]
+
+scenario_policy:
+  policy_id: topology_capacity_hotspot_beta_v1
+  d_total_strategy: round_half_up(total_source_capacity * regime_load_factor)
+  regime_load_factor: {LOW: 0.25, MEDIUM: 0.55, HIGH: 0.85}
+  hotspot_selection: top_capacity_quartile
+  rho: 0.55
+  scenario_alpha: 2.0
+  scenario_beta: 2.0
+  capacity_required: true
+  total_population_exact: true
+
+m5_policy:
+  residual_pool_scope: model_id_plus_ground_truth_regime
+  density_and_detection: separate_by_model_and_paradigm
+  sampling: with_replacement
+  negative_population_handling: floor_at_zero_after_residual
+  rounding: round_half_up
+  capacity_overflow: preserve_observation_for_decision_then_external_validator_flags_post_state
+  residual_to_node_mapping: regime_matched_empirical_residual_per_source_node
+  minimum_pool_size: fail_if_empty
+  deployment_decision_buffer: prohibited
+
+framework_conditions:
+  w/o Two-stage framework:
+    trial_type: ideal
+    decision_input: scenario_gt_population
+    residual: prohibited
+  w/ Two-stage framework:
+    trial_type: deployment
+    decision_input: observed_population
+    residual: controlled_empirical_residual_propagation
+    paired_with: ideal_same_pair_id_and_scenario_checksum
+
+metrics:
+  metric_policy_id: safety_consistency
+  metric_policy_version: 2.0.0
+  risk_threshold: 0.82
+  risk_consistency: {formula: f_beta, beta: 2.0}
+  action_consistency: 0.50 * legality + 0.35 * priority + 0.15 * economy; legality failure gates final score to 0
+  r_trial: valid
+  r_ideal: average(valid of ideal trials)
+  r_deploy: average(valid of deployment trials)
+  delta_r: R_ideal - R_deploy
+  unavailable_values: null_not_zero
+
+decision_interfaces:
+  rule_based: {enabled: true, formal_when_gai_unavailable: true}
+  gai: {enabled: false, status_when_disabled: unavailable, reserved_for_future_api: true}
+
+outputs:
+  root: storage/published/runs
+  table_count: 15
+  formats: [csv, markdown, xlsx_bundle, zip_bundle]

@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "topology_id": "FCU",
+  "rule_source_id": "ai_generated_derived_v1",
+  "rule_source_label": "AI-generated topology graph materialized rule bundle",
+  "rule_source_scope": "graph_adjacency_cost_and_exit_derivation",
+  "generated_from": "ai_map_and_neighbors",
+  "graph_directionality": "undirected",
+  "adjacency_semantics": "symmetric",
+  "edge_cost_directionality": "directed",
+  "cost_semantics": "total_cost = edge_cost + traversal_cost",
+  "max_total_cost": 3,
+  "allowed_node_types_as_source": [
+    "zone"
+  ],
+  "allowed_node_types_as_destination": [
+    "zone",
+    "exit"
+  ],
+  "external_exits": [
+    "E1",
+    "E2",
+    "E3",
+    "E4"
+  ],
+  "exit_behavior": "terminate_search",
+  "exit_search_behavior": "stop",
+  "priority_rule": "ascending_total_cost",
+  "decision_output_mode": "target_only",
+  "governance_defaults": [
+    "max_total_cost",
+    "allowed_node_types_as_source",
+    "allowed_node_types_as_destination",
+    "exit_behavior",
+    "priority_rule",
+    "decision_output_mode"
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "manifest_version": "topology_input_manifest_v1",
+  "materialization_id": "ai_generated_derived_v1",
+  "source_label": "X:/瀏覽器下載/拓樸0803/拓樸0803/AI生成",
+  "rule_source_id": "ai_generated_derived_v1",
+  "rule_source_label": "AI-generated topology graph materialized rule bundle",
+  "graph_directionality": "undirected",
+  "adjacency_semantics": "symmetric",
+  "edge_cost_directionality": "directed",
+  "topologies": [
+    {
+      "topology_id": "fcu",
+      "source_topology_id": "FCU",
+      "source_files": {
+        "fcu_map_GPT.json": "sha256:d845c2b497d498dcf315dc0899590688e10dbd91cf425f4e0d0db0b8e43c6f1f",
+        "fcu_neighbors_GPT.json": "sha256:1a06978b9cd4d8c2d66987ded08416f6379f2c5c1b9a02b9457b65a2939a6bf5"
+      },
+      "materialized_files": {
+        "fcu_map_neww.json": "sha256:52ecd3e9677c0a4b48c7b0130daaf819d02945c514e65626eef3c3d21f4af882",
+        "fcu_neighbors.json": "sha256:7f1f39a8c898382971028a9feb9f1f11d99665fc4bdb6089e586726885de042e",
+        "fcu_rule.json": "sha256:f45fbfd1db313799cdd7b425ebf46f24f1511ae2e7fc42550fa039a3aacc51c0"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "ai_generated/fcu",
+        "node_count": 40,
+        "directed_edge_count": 178,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4"
+        ],
+        "asymmetric_cost_pairs": [
+          {
+            "source_id": "4",
+            "target_id": "6",
+            "forward_cost": 10,
+            "reverse_cost": 1
+          }
+        ],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4"
+        ]
+      },
+      "rule_provenance": {
+        "rule_source_id": "ai_generated_derived_v1",
+        "generated_from": "ai_map_and_neighbors",
+        "ai_derived_fields": [
+          "nodes",
+          "capacity",
+          "adjacency",
+          "edge_cost",
+          "traversal_cost",
+          "external_exits"
+        ],
+        "system_contract_fields": [
+          "max_total_cost",
+          "allowed_node_types_as_source",
+          "allowed_node_types_as_destination",
+          "exit_behavior",
+          "priority_rule",
+          "decision_output_mode"
+        ]
+      }
+    },
+    {
+      "topology_id": "Taichung Lantern Festival",
+      "source_topology_id": "Taichung Lantern Festival",
+      "source_files": {
+        "Taichung Lantern Festival_map_GPT.json": "sha256:5a7d1ee572dde516a439e54a9a08d28b0dc02675d13827d7f7c36c60329094b4",
+        "Taichung Lantern Festival_neighbors_GPT.json": "sha256:b7b931f0d8d81dcacce6ac64913e4cf54dbef93335c468de20c4e002ef036e10"
+      },
+      "materialized_files": {
+        "Taichung Lantern Festival_map_neww.json": "sha256:146752d1533a8feba520fdeb756a91fdd56be6088f56eaa9785344d681401024",
+        "Taichung Lantern Festival_neighbors.json": "sha256:5ff5038c37dd69e7821106cfd4e1cbfa0e3193c5fe784228162cc09ac920eff8",
+        "Taichung Lantern Festival_rule.json": "sha256:96f715d415a189d56e2b4e80192eb580eb984b4050a05386cf78f5e92a238f38"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "ai_generated/Taichung Lantern Festival",
+        "node_count": 14,
+        "directed_edge_count": 42,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5"
+        ],
+        "asymmetric_cost_pairs": [],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5"
+        ]
+      },
+      "rule_provenance": {
+        "rule_source_id": "ai_generated_derived_v1",
+        "generated_from": "ai_map_and_neighbors",
+        "ai_derived_fields": [
+          "nodes",
+          "capacity",
+          "adjacency",
+          "edge_cost",
+          "traversal_cost",
+          "external_exits"
+        ],
+        "system_contract_fields": [
+          "max_total_cost",
+          "allowed_node_types_as_source",
+          "allowed_node_types_as_destination",
+          "exit_behavior",
+          "priority_rule",
+          "decision_output_mode"
+        ]
+      }
+    },
+    {
+      "topology_id": "Taipei New Year's Eve",
+      "source_topology_id": "Taipei New Year's Eve",
+      "source_files": {
+        "Taipei New Year's Eve_map_GPT.json": "sha256:927d3124825660ece4d747ddafd09d910d8cf3f8cd7ba0dc2fed0272cc9b0601",
+        "Taipei New Year's Eve_neighbors_GPT.json": "sha256:01bd6bda6c1de48813beb426bc802769d2526a64723acb151f5ea986fe91317c"
+      },
+      "materialized_files": {
+        "Taipei New Year's Eve_map_neww.json": "sha256:d86c423ab863b803920d963f23d9b8fef7331e020e9042de581bc71053c25af6",
+        "Taipei New Year's Eve_neighbors.json": "sha256:35d43845a320b067dacade6bb298a08bb5747b4fe2b8787b924e41a962ca284f",
+        "Taipei New Year's Eve_rule.json": "sha256:38f73e6d19f110a28bb22a5cec567641fe3a560db5e06a39445497baa4b27691"
+      },
+      "validation": {
+        "status": "PASSED",
+        "source_label": "ai_generated/Taipei New Year's Eve",
+        "node_count": 11,
+        "directed_edge_count": 26,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6"
+        ],
+        "asymmetric_cost_pairs": [],
+        "issues": []
+      },
+      "nearby_zone_policy": {
+        "algorithm": "directional_dijkstra",
+        "max_total_cost": 3,
+        "external_exits": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6"
+        ]
+      },
+      "rule_provenance": {
+        "rule_source_id": "ai_generated_derived_v1",
+        "generated_from": "ai_map_and_neighbors",
+        "ai_derived_fields": [
+          "nodes",
+          "capacity",
+          "adjacency",
+          "edge_cost",
+          "traversal_cost",
+          "external_exits"
+        ],
+        "system_contract_fields": [
+          "max_total_cost",
+          "allowed_node_types_as_source",
+          "allowed_node_types_as_destination",
+          "exit_behavior",
+          "priority_rule",
+          "decision_output_mode"
+        ]
+      }
+    }
+  ]
+}

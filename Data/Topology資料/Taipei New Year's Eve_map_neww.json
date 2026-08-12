@@ -1,0 +1,122 @@
+[
+  {
+    "id": "1",
+    "max_occupancy": 15000,
+    "nearby_zone": [
+      {
+        "id": "E1",
+        "hops": 1
+      },
+      {
+        "id": "E4",
+        "hops": 1
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "max_occupancy": 8000,
+    "nearby_zone": [
+      {
+        "id": "3",
+        "hops": 1
+      },
+      {
+        "id": "E1",
+        "hops": 1
+      },
+      {
+        "id": "4",
+        "hops": 2
+      },
+      {
+        "id": "E2",
+        "hops": 3
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "max_occupancy": 6000,
+    "nearby_zone": [
+      {
+        "id": "2",
+        "hops": 1
+      },
+      {
+        "id": "E1",
+        "hops": 1
+      },
+      {
+        "id": "4",
+        "hops": 3
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "max_occupancy": 12000,
+    "nearby_zone": [
+      {
+        "id": "2",
+        "hops": 1
+      },
+      {
+        "id": "E2",
+        "hops": 1
+      },
+      {
+        "id": "3",
+        "hops": 2
+      },
+      {
+        "id": "E1",
+        "hops": 2
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "max_occupancy": 10000,
+    "nearby_zone": [
+      {
+        "id": "E5",
+        "hops": 1
+      },
+      {
+        "id": "E6",
+        "hops": 1
+      }
+    ]
+  },
+  {
+    "id": "E1",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  },
+  {
+    "id": "E2",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  },
+  {
+    "id": "E3",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  },
+  {
+    "id": "E4",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  },
+  {
+    "id": "E5",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  },
+  {
+    "id": "E6",
+    "max_occupancy": 20000,
+    "nearby_zone": []
+  }
+]

@@ -1,0 +1,47 @@
+.env
+.env.*
+!.env.example
+.venv/
+host_venv_manifest.json
+__pycache__/
+*.py[cod]
+*.egg-info/
+backend/build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+storage/tmp/**
+!storage/tmp/.gitkeep
+storage/published/**
+!storage/published/.gitkeep
+
+# Generated experiment output and portable bundles.
+artifacts/
+prototype_data/
+portable_packages/
+._tmp_topology0803/
+
+# Local package-manager and build caches.
+.pnpm-store/
+frontend/.vite/
+frontend/.cache/
+
+# Local/reference documents are not required to build the system.
+/*.pdf
+/*.docx
+Data/Topology資料/*.pdf
+Data/Topology資料/*.pptx
+
+*.log
+.DS_Store
+Thumbs.db
