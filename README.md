@@ -56,7 +56,7 @@ machine that executes the experiment under `storage/published/runs/`.
 
 - Docker Desktop with Docker Compose
 - Python 3.12 or newer for host-side tests and scripts
-- Node.js and pnpm 11 for frontend development, or Docker for the full build
+- Node.js 22.13 or newer and pnpm 11 for frontend development, or Docker for the full build
 - Optional M6 GAI provider: Ollama on the host or OpenAI API access
 
 ## Quick start with Docker

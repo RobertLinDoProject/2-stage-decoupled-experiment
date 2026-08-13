@@ -27,14 +27,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.9.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          node-version: '22.13.0'
+      - name: Enable pnpm with Corepack
+        id: pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+          echo "version=$(pnpm --version)" >> "$GITHUB_OUTPUT"
+          echo "store-path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm.outputs.store-path }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
       - name: Install frontend dependencies
         working-directory: frontend
         run: pnpm install --frozen-lockfile
