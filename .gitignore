@@ -42,6 +42,13 @@ frontend/.cache/
 Data/Topology資料/*.pdf
 Data/Topology資料/*.pptx
 
+# Local research reports and internal planning notes.
+/docs/
+/staged_experiment_execution_plan.md
+/two_stage_experiment_alignment_modification_requirements.md
+/w_two_stage_ui_design.md
+/scripts/build_paper_view_guide_docx.py
+
 *.log
 .DS_Store
 Thumbs.db

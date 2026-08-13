@@ -47,8 +47,7 @@ contracts/               Input and artifact contracts
 Data/Perception資料/     Formal A1-A3 perception input tables
 Data/Topology資料/       Human and AI-generated topology packages
 scripts/                 Preflight, packaging and verification scripts
-docs/                    Research and acceptance documentation
-storage/                 Local runtime output directory
+ storage/                 Local runtime output directory
 ```
 
 Historical runs are intentionally not committed to Git. They remain on the
@@ -173,7 +172,7 @@ API keys or `.venv` as part of a result bundle.
 Portable packaging and GPU-host setup are documented in:
 
 - `portable_gpu_run_guide.md`
-- `scripts/create_portable_package.ps1`
+- `scripts/package_portable_runtime.ps1`
 - `scripts/verify_portable_environment.ps1`
 
 The package contains source code, configuration, contracts and formal input
@@ -205,12 +204,13 @@ transports where applicable.
 ## Documentation
 
 The repository includes the calculation flow, UI reading guide, system build
-specification and portable execution notes. Start with:
+specification, input contracts and portable execution notes. Start with:
 
 - `codex_two_stage_ui_system_build_spec.md`
 - `decoupled_2_stage_experiment_calculation_flow.md`
 - `paper_view_reading_guide.md`
 - `portable_gpu_run_guide.md`
+- `contracts/decoupled_2_stage_experiment_contracts.md`
 
 ## License
 
