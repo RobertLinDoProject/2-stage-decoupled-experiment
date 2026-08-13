@@ -43,7 +43,6 @@ Delta_R  = R_ideal - R_deploy
 backend/                 FastAPI service and M0-M9 application code
 frontend/                React UI and standalone topology preview
 configs/                 Runtime and experiment configuration
-contracts/               Input and artifact contracts
 Data/Perception資料/     Formal A1-A3 perception input tables
 Data/Topology資料/       Human and AI-generated topology packages
 scripts/                 Preflight, packaging and verification scripts
@@ -200,17 +199,6 @@ pnpm build
 
 Tests and builds do not call an external GAI provider. Provider tests use fake
 transports where applicable.
-
-## Documentation
-
-The repository includes the calculation flow, UI reading guide, system build
-specification, input contracts and portable execution notes. Start with:
-
-- `codex_two_stage_ui_system_build_spec.md`
-- `decoupled_2_stage_experiment_calculation_flow.md`
-- `paper_view_reading_guide.md`
-- `portable_gpu_run_guide.md`
-- `contracts/decoupled_2_stage_experiment_contracts.md`
 
 ## License
 
