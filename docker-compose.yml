@@ -33,7 +33,7 @@ services:
       - ./storage:/app/storage
       - ./contracts:/app/contracts:ro
       - ./configs:/app/configs:ro
-      - ./Data:/data/current-project:ro
+      - ./data:/data/current-project:ro
     ports:
       - "8000:8000"
     healthcheck:

@@ -123,7 +123,7 @@ class TopologyInputContractTests(unittest.TestCase):
 
     def test_materialized_repository_inputs_keep_directional_cost_metadata(self) -> None:
         root = Path(__file__).resolve().parents[4]
-        data_root = root / "Data" / "Topology資料"
+        data_root = root / "data" / "Topology資料"
         manifest = json.loads((data_root / "topology_input_manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["graph_directionality"], "undirected")
         self.assertEqual(manifest["adjacency_semantics"], "symmetric")
@@ -135,7 +135,7 @@ class TopologyInputContractTests(unittest.TestCase):
 
     def test_materialized_formal_cost_pairs_are_preserved(self) -> None:
         root = Path(__file__).resolve().parents[4]
-        data_root = root / "Data" / "Topology資料"
+        data_root = root / "data" / "Topology資料"
 
         def costs(file_name: str) -> dict[tuple[str, str], int]:
             rows = json.loads((data_root / file_name).read_text(encoding="utf-8"))
@@ -154,7 +154,7 @@ class TopologyInputContractTests(unittest.TestCase):
 
     def test_stage2_triplet_loader_preserves_both_directional_edges(self) -> None:
         root = Path(__file__).resolve().parents[4]
-        data_root = root / "Data" / "Topology資料"
+        data_root = root / "data" / "Topology資料"
         with tempfile.TemporaryDirectory() as artifact_root:
             config = Stage2PipelineConfig(
                 run_id="directional-cost-loader-test",

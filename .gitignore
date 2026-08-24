@@ -39,11 +39,15 @@ frontend/.cache/
 # Local/reference documents are not required to build the system.
 /*.pdf
 /*.docx
-Data/Topology資料/*.pdf
-Data/Topology資料/*.pptx
+data/Topology資料/*.pdf
+data/Topology資料/*.pptx
 
 # Local research reports and internal planning notes.
 /docs/
+/_qa_action_consistency_docx/
+/action_consistency_comparison_build.py
+/實驗記錄ID.txt
+/*.pptx
 /staged_experiment_execution_plan.md
 /two_stage_experiment_alignment_modification_requirements.md
 /w_two_stage_ui_design.md

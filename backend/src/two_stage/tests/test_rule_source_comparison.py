@@ -16,7 +16,7 @@ from two_stage.settings import Settings
 
 
 ROOT = Path(__file__).resolve().parents[4]
-DATA_ROOT = Path("Data")
+DATA_ROOT = Path("data")
 AI_ROOT = DATA_ROOT / "Topology資料" / "AI生成"
 
 
@@ -25,7 +25,7 @@ class RuleSourceComparisonTests(unittest.TestCase):
         return Decoupled2StageExperimentUseCase(Settings(
             app_env="test",
             local_artifact_root=str(artifact_root),
-            current_project_data_root=str(ROOT / "Data"),
+            current_project_data_root=str(ROOT / "data"),
             current_project_config_root=str(ROOT / "configs"),
             live_gai_provider_enabled=False,
         ))
@@ -280,7 +280,7 @@ class RuleSourceComparisonTests(unittest.TestCase):
             settings = Settings(
                 app_env="test",
                 local_artifact_root=str(Path(temporary_root)),
-                current_project_data_root=str(ROOT / "Data"),
+                current_project_data_root=str(ROOT / "data"),
                 current_project_config_root=str(ROOT / "configs"),
                 live_gai_provider_enabled=True,
                 gai_execution_mode="live",
@@ -453,7 +453,7 @@ class RuleSourceComparisonTests(unittest.TestCase):
             settings = Settings(
                 app_env="test",
                 local_artifact_root=str(Path(temporary_root)),
-                current_project_data_root=str(ROOT / "Data"),
+                current_project_data_root=str(ROOT / "data"),
                 current_project_config_root=str(ROOT / "configs"),
                 live_gai_provider_enabled=True,
                 gai_execution_mode="reserved_unavailable",
@@ -557,7 +557,7 @@ class RuleSourceComparisonTests(unittest.TestCase):
             settings = Settings(
                 app_env="test",
                 local_artifact_root=temporary_root,
-                current_project_data_root=str(ROOT / "Data"),
+                current_project_data_root=str(ROOT / "data"),
                 current_project_config_root=str(ROOT / "configs"),
                 live_gai_provider_enabled=True,
                 gai_execution_mode="live",
@@ -592,7 +592,7 @@ class RuleSourceComparisonTests(unittest.TestCase):
             settings = Settings(
                 app_env="test",
                 local_artifact_root=temporary_root,
-                current_project_data_root=str(ROOT / "Data"),
+                current_project_data_root=str(ROOT / "data"),
                 current_project_config_root=str(ROOT / "configs"),
                 live_gai_provider_enabled=True,
                 gai_execution_mode="live",

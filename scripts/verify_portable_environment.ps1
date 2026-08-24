@@ -53,7 +53,7 @@ Add-Check "Docker command" ([bool](Get-Command docker -ErrorAction SilentlyConti
 Add-Check "Ollama command" (($null -ne $ollamaExecutable) -or $ollamaServiceAvailable) $(if ($null -ne $ollamaExecutable) { "ollama executable is available at $ollamaExecutable" } elseif ($ollamaServiceAvailable) { "Ollama service is reachable even though CLI is not in PATH" } else { "ollama executable is not in PATH or a standard install location" })
 Add-Check "Ollama service" $ollamaServiceAvailable $ollamaServiceMessage
 Add-Check "Ollama model" ($ollamaServiceAvailable -and ($ollamaModelNames -contains $ExpectedModel)) "Model is present in local Ollama /api/tags"
-Add-Check "Formal Data" (Test-Path -LiteralPath (Join-Path $root "Data") -PathType Container) "Data directory exists"
+Add-Check "Formal data" (Test-Path -LiteralPath (Join-Path $root "data") -PathType Container) "data directory exists"
 Add-Check "Docker Compose file" (Test-Path -LiteralPath (Join-Path $root "docker-compose.yml") -PathType Leaf) "docker-compose.yml exists"
 $venvPython = Join-Path $root ".venv\Scripts\python.exe"
 if (Test-Path -LiteralPath $venvPython -PathType Leaf) {

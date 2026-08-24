@@ -4,10 +4,10 @@ run_purpose: exploratory_rule_source_interface_comparison
 rule_sources:
   - id: human_manual_v1
     label: 人工規則
-    package: Data/Topology資料
+    package: data/Topology資料
   - id: ai_generated_derived_v1
     label: AI 生成規則
-    package: Data/Topology資料/AI生成
+    package: data/Topology資料/AI生成
 decision_interfaces:
   - id: rule_based
     availability: available

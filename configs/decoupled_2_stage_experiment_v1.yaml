@@ -3,9 +3,9 @@ profile_version: 2
 purpose: Generate paired ideal/deployment decoupled two-stage experiment tables from formal A/B data.
 
 inputs:
-  data_root: Data
-  topology_root: Data/Topology資料
-  perception_root: Data/Perception資料
+  data_root: data
+  topology_root: data/Topology資料
+  perception_root: data/Perception資料
   topology_sets:
     - topology_id: fcu
       map: fcu_map_neww.json

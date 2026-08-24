@@ -72,7 +72,7 @@ function Copy-PortableTree {
     }
 }
 
-foreach ($directory in @("backend", "frontend", "contracts", "configs", "Data", "scripts")) {
+foreach ($directory in @("backend", "frontend", "contracts", "configs", "data", "scripts")) {
     Copy-PortableTree -RelativePath $directory
 }
 
@@ -120,7 +120,7 @@ $fileRecords = @(
             }
         }
 )
-$dataRecords = @($fileRecords | Where-Object { $_.path -like "Data/*" })
+$dataRecords = @($fileRecords | Where-Object { $_.path -like "data/*" })
 $manifest = [ordered]@{
     schema_version = "portable_runtime_manifest_v1"
     package_name = $packageName

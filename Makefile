@@ -17,5 +17,5 @@ frontend-typecheck:
 	cd frontend && pnpm typecheck
 
 clean:
-	@echo "This repository now keeps only Data, M0-M9 core code, and decoupled two-stage experiment outputs."
+	@echo "This repository now keeps only data, M0-M9 core code, and decoupled two-stage experiment outputs."
 	@echo "Generated decoupled two-stage runs are stored under storage/published/runs/."

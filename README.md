@@ -43,8 +43,8 @@ Delta_R  = R_ideal - R_deploy
 backend/                 FastAPI service and M0-M9 application code
 frontend/                React UI and standalone topology preview
 configs/                 Runtime and experiment configuration
-Data/Perception資料/     Formal A1-A3 perception input tables
-Data/Topology資料/       Human and AI-generated topology packages
+data/Perception資料/     Formal A1-A3 perception input tables
+data/Topology資料/       Human and AI-generated topology packages
 scripts/                 Preflight, packaging and verification scripts
  storage/                 Local runtime output directory
 ```
@@ -164,7 +164,7 @@ storage/published/runs/<run_id>/
 ```
 
 To inspect a Run on another machine, copy the complete `<run_id>` directory
-into the same path, keep its source input Data checksums unchanged, and restart
+into the same path, keep its source input data checksums unchanged, and restart
 the API/frontend containers if they are already running. Never copy `.env`,
 API keys or `.venv` as part of a result bundle.
 

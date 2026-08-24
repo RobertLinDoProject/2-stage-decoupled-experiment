@@ -24,7 +24,7 @@ class ScenarioConfigurationLimitTests(unittest.TestCase):
         use_case = Decoupled2StageExperimentUseCase(Settings(
             app_env="test",
             local_artifact_root=str(ROOT / "storage"),
-            current_project_data_root=str(ROOT / "Data"),
+            current_project_data_root=str(ROOT / "data"),
             current_project_config_root=str(ROOT / "configs"),
             live_gai_provider_enabled=False,
         ))

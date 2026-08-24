@@ -16,7 +16,7 @@ class PerceptionErrorBoundaryTests(unittest.TestCase):
         settings = Settings(
             app_env="test",
             local_artifact_root=self.temp.name,
-            current_project_data_root=str(Path(__file__).resolve().parents[4] / "Data"),
+            current_project_data_root=str(Path(__file__).resolve().parents[4] / "data"),
             current_project_config_root=str(Path(__file__).resolve().parents[4] / "configs"),
             live_gai_provider_enabled=False,
         )
