@@ -8,7 +8,7 @@ perception uncertainty affects evacuation decisions when the decision model
 receives observed population counts instead of ground-truth counts.
 
 The system connects empirical perception residuals to a capacity-aware
-evacuation decision process while keeping M7 validation independent from the
+evacuation decision process while keeping validation independent from the
 decision input. This makes the `w/o` and `w/` comparison reproducible and
 auditable rather than allowing the decision result to validate itself.
 
@@ -19,9 +19,10 @@ reliability of an evacuation decision system under otherwise matched
 conditions. It compares two paired branches using the same scenario,
 topology, capacity, rule source, model, regime and trial seed:
 
-- `w/o Two-stage framework`: M6 receives the ground-truth population.
-- `w/ Two-stage framework`: M6 receives the M5 population observation with
-  empirical perception residuals.
+- `w/o Two-stage framework`: the decision model receives the ground-truth
+  population.
+- `w/ Two-stage framework`: the decision model receives the population
+  observation with empirical perception residuals.
 
 The final Run produces evidence for three questions:
 
@@ -30,7 +31,7 @@ The final Run produces evidence for three questions:
 2. How large is the reliability change, and is its direction consistent across
    the selected topology, perception model, density regime, rule source and
    decision interface?
-3. Which trials fail M7, and are the failures associated with the observed
+3. Which trials fail independent validation, and are the failures associated with the observed
    population error, infeasible evacuation allocation, invalid model output or
    another recorded execution outcome?
 
@@ -46,8 +47,9 @@ Delta_R  = R_ideal - R_deploy
 branch for the selected Run. The result supports a conclusion about the
 selected configurations and paired trials; it is not by itself a universal
 claim about every topology, perception model, population density or GAI model.
-M8 stores the aggregate evidence, while M9 stores the delivery and
-reproducibility manifests needed to audit how the conclusion was produced.
+The aggregate results store the evidence, while the delivery and
+reproducibility manifests preserve the information needed to audit how the
+conclusion was produced.
 
 ## Key features
 
@@ -58,13 +60,13 @@ reproducibility manifests needed to audit how the conclusion was produced.
   perception input tables instead of using an arbitrary synthetic noise rule.
 - **Capacity-aware evacuation decisions:** combines topology, capacity and
   scenario ground truth before the decision stage.
-- **Independent validation:** M7 validates both branches with the same human
-  gold-standard validator; M8 then calculates the formal reliability metrics.
+- **Independent validation:** both branches are checked by the same human
+  gold-standard validator before the formal reliability metrics are calculated.
 - **Reproducible delivery:** fixed seeds, paired trials, input checksums and
-  M9 manifests preserve the evidence needed to inspect or reproduce a Run.
+  delivery manifests preserve the evidence needed to inspect or reproduce a Run.
 - **Model comparison:** supports deterministic `rule-based` decisions and
-  compares a local Ollama model with an OpenAI model through the same M6/M7
-  experiment pipeline.
+  compares a local Ollama model with an OpenAI model through the same decision
+  and validation pipeline.
 
 ## Execution pipeline
 
@@ -114,7 +116,7 @@ machine that executes the experiment under `storage/published/runs/`.
 - Docker Desktop with Docker Compose
 - Python 3.12 or newer for host-side tests and scripts
 - Node.js 22.13 or newer and pnpm 11 for frontend development, or Docker for the full build
-- Optional M6 model comparison: a local Ollama model and/or OpenAI model access
+- Optional model comparison: a local Ollama model and/or OpenAI model access
 
 ## Quick start with Docker
 
